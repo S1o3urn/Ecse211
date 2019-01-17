@@ -28,6 +28,7 @@ public class BangBangController implements UltrasonicController {
     // TODO: process a movement based on the us distance passed in (BANG-BANG style)
     
     //ASSUMPTION: Always follows the wall on left side (may be opposite)
+    //if wrong swap motor speeds with left and right for both cases
     
     //if distance is bigger or smaller than offset from wall by threshold
     //set motor speed accordingly to orientation
