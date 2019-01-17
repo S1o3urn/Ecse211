@@ -27,8 +27,20 @@ public class BangBangController implements UltrasonicController {
     this.distance = distance;
     // TODO: process a movement based on the us distance passed in (BANG-BANG style)
     
+    //ASSUMPTION: Always follows the wall on left side (may be opposite)
+    
     //if distance is bigger or smaller than offset from wall by threshold
     //set motor speed accordingly to orientation
+    
+    //Robot too close to wall
+    if(distance < bandCenter - bandwidth) {
+    	WallFollowingLab.leftMotor.setSpeed(motorLow);
+    	WallFollowingLab.rightMotor.setSpeed(motorHigh);
+    }
+    if(distance > bandCenter + bandwidth) {
+    	WallFollowingLab.rightMotor.setSpeed(motorLow);
+    	WallFollowingLab.leftMotor.setSpeed(motorHigh);
+    }
   }
 
   @Override
