@@ -5,7 +5,7 @@ This is where all code will be uploaded
 ## How to Use this GitHub Repository
 
 ### How to Clone
-To clone this repository, enter `git clone https://github.com/ECSE321-Fall2018/t08` in the desired directory. It will create a `t08` folder containing our project code.
+To clone this repository, enter `git clone https://github.com/Ecse211` in the desired directory. It will create a `Ecse211` folder containing our project code.
 
 ### How to Make Changes to Our Project
 
@@ -25,7 +25,7 @@ To clone this repository, enter `git clone https://github.com/ECSE321-Fall2018/t
 5. To merge pushed changes with master branch, create a pull request and get one person to approve your request.
 
 #### Long Guide
-1. Go to the ["Issues" tab on GitHub](https://github.com/ECSE321-Fall2018/t08/issues).
+1. Go to the ["Issues" tab on GitHub](https://github.com/Ecse211/issues).
 2. Look for an issue to fix or create your own issue (press "New issue").
     1. If you are fixing another person's issue:
         1. You can leave a comment if you have questions for the guy (or girl) who created the issue.
