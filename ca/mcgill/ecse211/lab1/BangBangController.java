@@ -29,20 +29,18 @@ public class BangBangController implements UltrasonicController {
 
 	@Override
 	public void processUSData(int distance) {
-		this.distance = distance;
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
 		//ASSUMPTION: Robot always follows left wall
 
 		// Filter out false negative from us (taken from PController)
 
 		// There is an abnormally large value
-		if ((distance >= 60) && (filterControl < FILTER_OUT)) {
+		if ((distance >= 50) && (filterControl < FILTER_OUT)) {
 			filterControl++;
 		}
 
 		// FILTER_OUT amount of repeated large value
 		// meaning there could be nothing there to scan
-		// No changes to distance
 		else if (distance >= 255) {
 			this.distance = distance;
 		}
@@ -62,14 +60,14 @@ public class BangBangController implements UltrasonicController {
 		
 		//Robot is on the inside of the offset and over the bandwidth
 		//Robot will steer right
-		else if(distance < (bandCenter - bandwidth)) {
+		if(distance < (bandCenter - bandwidth)) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh);
 			WallFollowingLab.rightMotor.setSpeed(motorLow);
 		}
 		
 		//Robot is on the outside of the offset and over the bandwidth
 		//Robot will steer left
-		else if((distance > (bandCenter + bandwidth))) {
+		if((distance > (bandCenter + bandwidth))) {
 			WallFollowingLab.leftMotor.setSpeed(motorLow);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh);
 		}
