@@ -52,11 +52,21 @@ public class BangBangController implements UltrasonicController {
 			this.distance = distance;
 		}
 		
+		//Robot is too close and doesn't have enough space to turn anymore
+		if(distance <= 15) {
+			WallFollowingLab.leftMotor.setSpeed(motorHigh);
+			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.leftMotor.backward();
+			WallFollowingLab.rightMotor.backward();
+		}
+		
 		//Robot is at offset and within the appropriate bandwidth
 		//Robot will go straight
 		if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter + bandwidth))) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.leftMotor.forward();
+			WallFollowingLab.rightMotor.forward();
 		}
 		
 		//Robot is on the inside of the offset and over the bandwidth
@@ -64,6 +74,8 @@ public class BangBangController implements UltrasonicController {
 		if(distance < (bandCenter - bandwidth)) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh - (speedIncrease/2));
+			WallFollowingLab.leftMotor.forward();
+			WallFollowingLab.rightMotor.forward();
 		}
 		
 		//Robot is on the outside of the offset and over the bandwidth
@@ -71,6 +83,8 @@ public class BangBangController implements UltrasonicController {
 		if((distance > (bandCenter + bandwidth))) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease/2));
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.leftMotor.forward();
+			WallFollowingLab.rightMotor.forward();
 		}
 	}
 
