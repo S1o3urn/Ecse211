@@ -39,14 +39,16 @@ public class PController implements UltrasonicController {
 		// could have).
 		//
 		// There is an abnormally large value
-		if ((distance >= 75) && (filterControl < FILTER_OUT)) {
+		if ((distance == 255) && (filterControl < FILTER_OUT)) {
 			filterControl++;
 		}
 
 		// FILTER_OUT amount of repeated large value
 		// meaning there could be nothing there to scan
-		else if (distance >= 75) {
+		else if (distance == 255) {
 			this.distance = distance;
+			WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + 100);
+			WallFollowingLab.rightMotor.setSpeed(500);
 		}
 		
 		//Filtered values
@@ -76,8 +78,8 @@ public class PController implements UltrasonicController {
 				//Need to turn right
 				//Increase left motor speed proportionally to error
 				//Decrease right motor speed proportionally to error
-				currentLeftSpeed = MOTOR_SPEED * error / bandWidth;
-				currentRightSpeed = MOTOR_SPEED * bandWidth / error;
+				currentLeftSpeed = (MOTOR_SPEED * error) / bandWidth;
+				currentRightSpeed = (MOTOR_SPEED * bandWidth) / error;
 				
 				//Set a speed limit to avoid overworking motors
 				if(currentLeftSpeed > 400) {
@@ -97,8 +99,8 @@ public class PController implements UltrasonicController {
 				//Need to turn left
 				//Decrease left motor speed proportionally to error
 				//Increase right motor speed proportionally to error
-				currentRightSpeed = MOTOR_SPEED * error / (bandWidth);
-				currentLeftSpeed = MOTOR_SPEED * (bandWidth) / error;
+				currentRightSpeed = (MOTOR_SPEED * error) / bandWidth;
+				currentLeftSpeed = (MOTOR_SPEED * bandWidth) / error;
 				
 				//we don't want the motor to run too fast, so we add a min and max speed
 
