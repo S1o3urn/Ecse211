@@ -32,6 +32,7 @@ public class BangBangController implements UltrasonicController {
 	public void processUSData(int distance) {
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
 		// ASSUMPTION: Robot always follows left wall
+		// us sensor is positionned at around 45-60 degrees
 
 		// Filter out false negative from us (taken from PController)
 
@@ -42,7 +43,7 @@ public class BangBangController implements UltrasonicController {
 
 		// FILTER_OUT amount of repeated large value
 		// meaning there could be nothing there to scan
-		else if (distance >= 255) {
+		else if (distance >= 75) {
 			this.distance = distance;
 		}
 
