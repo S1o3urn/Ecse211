@@ -31,7 +31,7 @@ public class BangBangController implements UltrasonicController {
 	@Override
 	public void processUSData(int distance) {
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
-		//ASSUMPTION: Robot always follows left wall
+		// ASSUMPTION: Robot always follows left wall
 
 		// Filter out false negative from us (taken from PController)
 
@@ -51,44 +51,43 @@ public class BangBangController implements UltrasonicController {
 			filterControl = 0;
 			this.distance = distance;
 		}
-		
-		//Robot is too close and doesn't have enough space to turn anymore
-		if(distance <= 25) {
+
+		// Robot is too close and doesn't have enough space to turn anymore
+		if (distance <= 25) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.leftMotor.backward();
 			WallFollowingLab.rightMotor.backward();
 		}
-		
-		//Robot is at offset and within the appropriate bandwidth
-		//Robot will go straight
+
+		// Robot is at offset and within the appropriate bandwidth
+		// Robot will go straight
 		/*
-		else if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter + bandwidth))) {
+		 * else if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter +
+		 * bandwidth))) { WallFollowingLab.leftMotor.setSpeed(motorHigh +
+		 * speedIncrease); WallFollowingLab.rightMotor.setSpeed(motorHigh +
+		 * speedIncrease); WallFollowingLab.leftMotor.forward();
+		 * WallFollowingLab.rightMotor.forward(); }
+		 */
+
+		// Robot is on the inside of the offset and over the bandwidth
+		// Robot will steer right
+		else if (distance < (bandCenter - bandwidth)) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.rightMotor.setSpeed(motorHigh - (speedIncrease / 2));
+			WallFollowingLab.leftMotor.forward();
+			WallFollowingLab.rightMotor.forward();
+		}
+
+		// Robot is on the outside of the offset and over the bandwidth
+		// Robot will steer left
+		else if ((distance > (bandCenter + bandwidth))) {
+			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease / 2));
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.forward();
 		}
-		*/
-		
-		//Robot is on the inside of the offset and over the bandwidth
-		//Robot will steer right
-		else if(distance < (bandCenter - bandwidth)) {
-			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
-			WallFollowingLab.rightMotor.setSpeed(motorHigh - (speedIncrease/2));
-			WallFollowingLab.leftMotor.forward();
-			WallFollowingLab.rightMotor.forward();
-		}
-		
-		//Robot is on the outside of the offset and over the bandwidth
-		//Robot will steer left
-		else if((distance > (bandCenter + bandwidth))) {
-			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease/2));
-			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
-			WallFollowingLab.leftMotor.forward();
-			WallFollowingLab.rightMotor.forward();
-		}
-		
+
 		else {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
