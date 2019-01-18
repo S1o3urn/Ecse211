@@ -5,7 +5,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class PController implements UltrasonicController {
 
 	/* Constants */
-	private static final int MOTOR_SPEED = 200;
+	private static final int MOTOR_SPEED = 300;
 	private static final int FILTER_OUT = 20;
 
 	private final int bandCenter;
@@ -14,21 +14,20 @@ public class PController implements UltrasonicController {
 	private int currentLeftSpeed;
 	private int currentRightSpeed;
 	private int filterControl;
-	private int speedIncrease = 100;
 
 	public PController(int bandCenter, int bandwidth) {
 		this.bandCenter = bandCenter;
 		this.bandWidth = bandwidth;
 		this.filterControl = 0;
 
-		WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + speedIncrease); // Initalize motor rolling forward
-		WallFollowingLab.rightMotor.setSpeed(MOTOR_SPEED + speedIncrease);
+		WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED); // Initalize motor rolling forward
+		WallFollowingLab.rightMotor.setSpeed(MOTOR_SPEED);
 
 		WallFollowingLab.leftMotor.forward();
 		WallFollowingLab.rightMotor.forward();
 
-		currentLeftSpeed = MOTOR_SPEED + speedIncrease;
-		currentRightSpeed = MOTOR_SPEED + speedIncrease;
+		currentLeftSpeed = MOTOR_SPEED;
+		currentRightSpeed = MOTOR_SPEED;
 	}
 
 	@Override
@@ -40,16 +39,19 @@ public class PController implements UltrasonicController {
 		// could have).
 		//
 		// There is an abnormally large value
-		if ((distance >= 75) && (filterControl < FILTER_OUT)) {
+		if ((distance == 255) && (filterControl < FILTER_OUT)) {
 			filterControl++;
 		}
 
 		// FILTER_OUT amount of repeated large value
 		// meaning there could be nothing there to scan
-		else if (distance >= 75) {
+		else if (distance == 255) {
 			this.distance = distance;
+			WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + 150);
+			WallFollowingLab.rightMotor.setSpeed(300);
 		}
-
+		
+		//Filtered values
 		else {
 			// distance went below 255: reset filter and leave
 			// distance alone.
@@ -67,8 +69,8 @@ public class PController implements UltrasonicController {
 			//Robot is on right path, advance straight
 			if((this.distance >= (bandCenter - bandWidth)) 
 					&& (this.distance <= (bandCenter + bandWidth))) {
-				WallFollowingLab.leftMotor.setSpeed(currentLeftSpeed);
-				WallFollowingLab.leftMotor.setSpeed(currentRightSpeed);
+				WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED);
+				WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED);
 			}
 			
 			//Robot is too close to wall
@@ -76,8 +78,8 @@ public class PController implements UltrasonicController {
 				//Need to turn right
 				//Increase left motor speed proportionally to error
 				//Decrease right motor speed proportionally to error
-				currentLeftSpeed = currentLeftSpeed * error / bandWidth;
-				currentRightSpeed = currentRightSpeed * bandWidth / error;
+				currentLeftSpeed = (int) (0.75 * (MOTOR_SPEED * error) / bandWidth);
+				currentRightSpeed = (MOTOR_SPEED * bandWidth) / error;
 				
 				//Set a speed limit to avoid overworking motors
 				if(currentLeftSpeed > 400) {
@@ -97,8 +99,8 @@ public class PController implements UltrasonicController {
 				//Need to turn left
 				//Decrease left motor speed proportionally to error
 				//Increase right motor speed proportionally to error
-				currentRightSpeed = currentRightSpeed * error / (bandWidth);
-				currentLeftSpeed = currentLeftSpeed * (bandWidth) / error;
+				currentRightSpeed = (MOTOR_SPEED * error) / bandWidth;
+				currentLeftSpeed = (MOTOR_SPEED * bandWidth) / error;
 				
 				//we don't want the motor to run too fast, so we add a min and max speed
 
