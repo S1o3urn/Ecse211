@@ -32,7 +32,7 @@ public class BangBangController implements UltrasonicController {
 	public void processUSData(int distance) {
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
 		// ASSUMPTION: Robot always follows left wall
-		// us sensor is positionned at around 45-60 degrees
+		// us sensor is positioned at around 45-60 degrees
 
 		// Filter out false negative from us (taken from PController)
 

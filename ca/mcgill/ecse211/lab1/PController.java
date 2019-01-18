@@ -47,10 +47,9 @@ public class PController implements UltrasonicController {
 		// meaning there could be nothing there to scan
 		else if (distance >= 75) {
 			this.distance = distance;
-			WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + 100);
-			WallFollowingLab.rightMotor.setSpeed(600);
 		}
-
+		
+		//Filtered values
 		else {
 			// distance went below 255: reset filter and leave
 			// distance alone.
