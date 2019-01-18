@@ -53,7 +53,7 @@ public class BangBangController implements UltrasonicController {
 		}
 		
 		//Robot is too close and doesn't have enough space to turn anymore
-		if(distance <= 15) {
+		if(distance <= 25) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.leftMotor.backward();
@@ -62,16 +62,18 @@ public class BangBangController implements UltrasonicController {
 		
 		//Robot is at offset and within the appropriate bandwidth
 		//Robot will go straight
-		if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter + bandwidth))) {
+		/*
+		else if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter + bandwidth))) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.forward();
 		}
+		*/
 		
 		//Robot is on the inside of the offset and over the bandwidth
 		//Robot will steer right
-		if(distance < (bandCenter - bandwidth)) {
+		else if(distance < (bandCenter - bandwidth)) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh - (speedIncrease/2));
 			WallFollowingLab.leftMotor.forward();
@@ -80,8 +82,15 @@ public class BangBangController implements UltrasonicController {
 		
 		//Robot is on the outside of the offset and over the bandwidth
 		//Robot will steer left
-		if((distance > (bandCenter + bandwidth))) {
+		else if((distance > (bandCenter + bandwidth))) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease/2));
+			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.leftMotor.forward();
+			WallFollowingLab.rightMotor.forward();
+		}
+		
+		else {
+			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.forward();
