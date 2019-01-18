@@ -48,7 +48,7 @@ public class PController implements UltrasonicController {
 		else if (distance == 255) {
 			this.distance = distance;
 			WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + 150);
-			WallFollowingLab.rightMotor.setSpeed(400);
+			WallFollowingLab.rightMotor.setSpeed(300);
 		}
 		
 		//Filtered values
@@ -78,7 +78,7 @@ public class PController implements UltrasonicController {
 				//Need to turn right
 				//Increase left motor speed proportionally to error
 				//Decrease right motor speed proportionally to error
-				currentLeftSpeed = (MOTOR_SPEED * error) / bandWidth;
+				currentLeftSpeed = (int) (0.75 * (MOTOR_SPEED * error) / bandWidth);
 				currentRightSpeed = (MOTOR_SPEED * bandWidth) / error;
 				
 				//Set a speed limit to avoid overworking motors
