@@ -13,6 +13,7 @@ public class BangBangController implements UltrasonicController {
 	private final int motorHigh;
 	private int distance; // simulated distance
 	private int filterControl; // filter threshold
+	private int speedIncrease = 100;
 
 	public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh) {
 		// Default Constructor
@@ -35,7 +36,7 @@ public class BangBangController implements UltrasonicController {
 		// Filter out false negative from us (taken from PController)
 
 		// There is an abnormally large value
-		if ((distance >= 50) && (filterControl < FILTER_OUT)) {
+		if ((distance >= 150) && (filterControl < FILTER_OUT)) {
 			filterControl++;
 		}
 
@@ -54,22 +55,22 @@ public class BangBangController implements UltrasonicController {
 		//Robot is at offset and within the appropriate bandwidth
 		//Robot will go straight
 		if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter + bandwidth))) {
-			WallFollowingLab.leftMotor.setSpeed(motorHigh);
-			WallFollowingLab.rightMotor.setSpeed(motorHigh);
+			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 		}
 		
 		//Robot is on the inside of the offset and over the bandwidth
 		//Robot will steer right
 		if(distance < (bandCenter - bandwidth)) {
-			WallFollowingLab.leftMotor.setSpeed(motorHigh);
-			WallFollowingLab.rightMotor.setSpeed(motorLow);
+			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.rightMotor.setSpeed(motorHigh - (speedIncrease/2));
 		}
 		
 		//Robot is on the outside of the offset and over the bandwidth
 		//Robot will steer left
 		if((distance > (bandCenter + bandwidth))) {
-			WallFollowingLab.leftMotor.setSpeed(motorLow);
-			WallFollowingLab.rightMotor.setSpeed(motorHigh);
+			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease/2));
+			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 		}
 	}
 
