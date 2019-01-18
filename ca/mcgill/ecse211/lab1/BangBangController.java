@@ -36,7 +36,7 @@ public class BangBangController implements UltrasonicController {
 		// Filter out false negative from us (taken from PController)
 
 		// There is an abnormally large value
-		if ((distance >= 150) && (filterControl < FILTER_OUT)) {
+		if ((distance >= 75) && (filterControl < FILTER_OUT)) {
 			filterControl++;
 		}
 
