@@ -1,5 +1,11 @@
 package ca.mcgill.ecse211.lab1;
 
+/*This class implements the p-type controller for Lab1 on the EV3 platform.
+ * Note: this controller assumes wall is on the left and the us sensor is positioned at a 45degree angle from the left.
+ * 
+ * @author TianhanJiang (260795887)
+ */
+
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class PController implements UltrasonicController {
@@ -8,6 +14,7 @@ public class PController implements UltrasonicController {
 	private static final int MOTOR_SPEED = 200;
 	private static final int FILTER_OUT = 20;
 
+	/*Variables*/
 	private final int bandCenter;
 	private final int bandWidth;
 	private int distance;
@@ -16,12 +23,15 @@ public class PController implements UltrasonicController {
 	private int filterControl;
 	private int speedIncrease = 100;
 
+	/*
+	 * This method sets up variable data and starts driving the robot forward in a straight line.
+	 */
 	public PController(int bandCenter, int bandwidth) {
 		this.bandCenter = bandCenter;
 		this.bandWidth = bandwidth;
 		this.filterControl = 0;
 
-		WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + speedIncrease); // Initalize motor rolling forward
+		WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + speedIncrease); // Initialize motor rolling forward
 		WallFollowingLab.rightMotor.setSpeed(MOTOR_SPEED + speedIncrease);
 
 		WallFollowingLab.leftMotor.forward();
@@ -30,7 +40,14 @@ public class PController implements UltrasonicController {
 		currentLeftSpeed = MOTOR_SPEED + speedIncrease;
 		currentRightSpeed = MOTOR_SPEED + speedIncrease;
 	}
-
+	
+	/*
+	 * (non-Javadoc)
+	 * @see ca.mcgill.ecse211.lab1.UltrasonicController#processUSData(int)
+	 * 
+	 * This method filters data from the us sensor so that everything further that 75 is not considered.
+	 * This data is then used to calculate whether to turn or not and by how much.
+	 */
 	@Override
 	public void processUSData(int distance) {
 
@@ -38,7 +55,7 @@ public class PController implements UltrasonicController {
 		// signal.
 		// (n.b. this was not included in the Bang-bang controller, but easily
 		// could have).
-		//
+		
 		// There is an abnormally large value
 		if ((distance >= 75) && (filterControl < FILTER_OUT)) {
 			filterControl++;
@@ -50,9 +67,9 @@ public class PController implements UltrasonicController {
 			this.distance = distance;
 		}
 
+		//Filtered values
 		else {
-			// distance went below 255: reset filter and leave
-			// distance alone.
+			// distance went below 255: reset filter and leave distance alone.
 			filterControl = 0;
 			this.distance = distance;
 

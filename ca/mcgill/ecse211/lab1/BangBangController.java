@@ -1,5 +1,11 @@
 package ca.mcgill.ecse211.lab1;
 
+/*This class implements the BangBang-type controller for Lab1 on the EV3 platform.
+ * Note: this controller assumes the wall is on the left and the us sensor is positioned at a 45degree angle from the left.
+ * 
+ * @author TianhanJiang (260795887)
+ */
+
 import lejos.hardware.motor.*;
 
 public class BangBangController implements UltrasonicController {
@@ -15,6 +21,9 @@ public class BangBangController implements UltrasonicController {
 	private int filterControl; // filter threshold
 	private int speedIncrease = 100;
 
+	/*
+	 * This method sets up variable data and starts driving the robot forward in a straight line.
+	 */
 	public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh) {
 		// Default Constructor
 		this.bandCenter = bandCenter;
@@ -28,6 +37,13 @@ public class BangBangController implements UltrasonicController {
 		WallFollowingLab.rightMotor.forward();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see ca.mcgill.ecse211.lab1.UltrasonicController#processUSData(int)
+	 * 
+	 * This method filters data from the us sensor so that everything further that 75 is not considered.
+	 * This data is then used to determined whether to drive straight, turn at a fixed speed or in special cases, backup a bit.
+	 */
 	@Override
 	public void processUSData(int distance) {
 		// TODO: process a movement based on the us distance passed in (BANG-BANG style)
@@ -54,22 +70,13 @@ public class BangBangController implements UltrasonicController {
 		}
 
 		// Robot is too close and doesn't have enough space to turn anymore
+		// Drive robot backwards turning slightly right to reposition better
 		if (distance <= 25) {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.leftMotor.backward();
 			WallFollowingLab.rightMotor.backward();
 		}
-
-		// Robot is at offset and within the appropriate bandwidth
-		// Robot will go straight
-		/*
-		 * else if((distance >= (bandCenter - bandwidth)) && (distance <= (bandCenter +
-		 * bandwidth))) { WallFollowingLab.leftMotor.setSpeed(motorHigh +
-		 * speedIncrease); WallFollowingLab.rightMotor.setSpeed(motorHigh +
-		 * speedIncrease); WallFollowingLab.leftMotor.forward();
-		 * WallFollowingLab.rightMotor.forward(); }
-		 */
 
 		// Robot is on the inside of the offset and over the bandwidth
 		// Robot will steer right
@@ -88,7 +95,8 @@ public class BangBangController implements UltrasonicController {
 			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.forward();
 		}
-
+		
+		//Robot can go in a straight line
 		else {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);
 			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
