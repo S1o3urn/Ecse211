@@ -1,5 +1,10 @@
 package ca.mcgill.ecse211.lab1;
 
+/*This class implements the p-type controller for Lab1 on the EV3 platform.
+ * Note: this controller assumes wall is on the left and the us sensor is positioned at a 45degree angle from the left.
+ * 
+ * @author TianhanJiang (260795887)
+ */
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class PController implements UltrasonicController {
@@ -8,19 +13,23 @@ public class PController implements UltrasonicController {
 	private static final int MOTOR_SPEED = 300;
 	private static final int FILTER_OUT = 20;
 
+	/* Variables */
 	private final int bandCenter;
 	private final int bandWidth;
 	private int distance;
 	private int currentLeftSpeed;
 	private int currentRightSpeed;
 	private int filterControl;
-
+	
+	/*
+	 * This method sets up variable data and starts driving the robot forward in a straight line.
+	 */
 	public PController(int bandCenter, int bandwidth) {
 		this.bandCenter = bandCenter;
 		this.bandWidth = bandwidth;
 		this.filterControl = 0;
 
-		WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED); // Initalize motor rolling forward
+		WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED); // Initialize motor rolling forward
 		WallFollowingLab.rightMotor.setSpeed(MOTOR_SPEED);
 
 		WallFollowingLab.leftMotor.forward();
@@ -30,6 +39,13 @@ public class PController implements UltrasonicController {
 		currentRightSpeed = MOTOR_SPEED;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see ca.mcgill.ecse211.lab1.UltrasonicController#processUSData(int)
+	 * 
+	 * This method filters data from the us sensor so that everything further that 75 is not considered.
+	 * This data is then used to calculate whether to turn or not and by how much.
+	 */
 	@Override
 	public void processUSData(int distance) {
 
@@ -37,7 +53,7 @@ public class PController implements UltrasonicController {
 		// signal.
 		// (n.b. this was not included in the Bang-bang controller, but easily
 		// could have).
-		//
+		
 		// There is an abnormally large value
 		if ((distance == 255) && (filterControl < FILTER_OUT)) {
 			filterControl++;
@@ -103,7 +119,6 @@ public class PController implements UltrasonicController {
 				currentLeftSpeed = (MOTOR_SPEED * bandWidth) / error;
 				
 				//we don't want the motor to run too fast, so we add a min and max speed
-
 				if (currentRightSpeed > 400) {
 					currentRightSpeed = 425;
 				}
