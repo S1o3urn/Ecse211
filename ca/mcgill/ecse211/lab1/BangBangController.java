@@ -23,8 +23,9 @@ public class BangBangController implements UltrasonicController {
 	private int speedIncrease = 100;
 
 	/*
-	 * This method sets up variable data and starts driving the robot forward in a straight line.
-	 * It takes in the bandCenter, the bandWidth and the high and low motor speeds.
+	 * This method sets up variable data and starts driving the robot forward in a
+	 * straight line. It takes in the bandCenter, the bandWidth and the high and low
+	 * motor speeds.
 	 */
 	public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh) {
 		// Default Constructor
@@ -38,13 +39,15 @@ public class BangBangController implements UltrasonicController {
 		WallFollowingLab.leftMotor.forward();
 		WallFollowingLab.rightMotor.forward();
 	}
-	
+
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see ca.mcgill.ecse211.lab1.UltrasonicController#processUSData(int)
 	 * 
-	 * This method filters data from the us sensor so that everything further that 75 is not considered.
-	 * This data is then used to determined whether to drive straight, turn at a fixed speed or in special cases, backup a bit.
+	 * This method filters data from the us sensor so that everything further that
+	 * 75 is not considered. This data is then used to determined whether to drive
+	 * straight, turn at a fixed speed or in special cases, backup a bit.
 	 */
 	@Override
 	public void processUSData(int distance) {
@@ -100,7 +103,7 @@ public class BangBangController implements UltrasonicController {
 			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.forward();
 		}
-		
+
 		// Robot can drive straight
 		else {
 			WallFollowingLab.leftMotor.setSpeed(motorHigh + speedIncrease);

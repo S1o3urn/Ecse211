@@ -20,10 +20,10 @@ public class PController implements UltrasonicController {
 	private int currentLeftSpeed;
 	private int currentRightSpeed;
 	private int filterControl;
-	
+
 	/*
-	 * This method sets up variable data and starts driving the robot forward in a straight line.
-	 * It takes in the bandCenterand bandwidth
+	 * This method sets up variable data and starts driving the robot forward in a
+	 * straight line. It takes in the bandCenterand bandwidth
 	 */
 	public PController(int bandCenter, int bandwidth) {
 		this.bandCenter = bandCenter;
@@ -42,10 +42,12 @@ public class PController implements UltrasonicController {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see ca.mcgill.ecse211.lab1.UltrasonicController#processUSData(int)
 	 * 
-	 * This method filters data from the us sensor so that everything further that 75 is not considered.
-	 * This data is then used to calculate whether to turn or not and by how much.
+	 * This method filters data from the us sensor so that everything further that
+	 * 75 is not considered. This data is then used to calculate whether to turn or
+	 * not and by how much.
 	 */
 	@Override
 	public void processUSData(int distance) {
@@ -54,7 +56,7 @@ public class PController implements UltrasonicController {
 		// signal.
 		// (n.b. this was not included in the Bang-bang controller, but easily
 		// could have).
-		
+
 		// There is an abnormally large value
 		if ((distance == 255) && (filterControl < FILTER_OUT)) {
 			filterControl++;
@@ -67,8 +69,8 @@ public class PController implements UltrasonicController {
 			WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + 150);
 			WallFollowingLab.rightMotor.setSpeed(300);
 		}
-		
-		//Filtered values
+
+		// Filtered values
 		else {
 			// distance went below 255: reset filter and leave
 			// distance alone.
@@ -82,52 +84,51 @@ public class PController implements UltrasonicController {
 				error = 1;
 			}
 			// TODO: process a movement based on the us distance passed in (P style)
-			
-			//Robot is on right path, advance straight
-			if((this.distance >= (bandCenter - bandWidth)) 
-					&& (this.distance <= (bandCenter + bandWidth))) {
+
+			// Robot is on right path, advance straight
+			if ((this.distance >= (bandCenter - bandWidth)) && (this.distance <= (bandCenter + bandWidth))) {
 				WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED);
 				WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED);
 			}
-			
-			//Robot is too close to wall
-			else if((this.distance < (bandCenter - bandWidth))) {
-				//Need to turn right
-				//Increase left motor speed proportionally to error
-				//Decrease right motor speed proportionally to error
+
+			// Robot is too close to wall
+			else if ((this.distance < (bandCenter - bandWidth))) {
+				// Need to turn right
+				// Increase left motor speed proportionally to error
+				// Decrease right motor speed proportionally to error
 				currentLeftSpeed = (int) (0.75 * (MOTOR_SPEED * error) / bandWidth);
 				currentRightSpeed = (MOTOR_SPEED * bandWidth) / error;
-				
-				//Set a speed limit to avoid overworking motors
-				if(currentLeftSpeed > 400) {
+
+				// Set a speed limit to avoid overworking motors
+				if (currentLeftSpeed > 400) {
 					currentLeftSpeed = 425;
 				}
-				
-				if(currentRightSpeed < 100) {
+
+				if (currentRightSpeed < 100) {
 					currentRightSpeed = 125;
 				}
-				
-				//Change motor speeds
+
+				// Change motor speeds
 				WallFollowingLab.leftMotor.setSpeed(currentLeftSpeed);
 				WallFollowingLab.rightMotor.setSpeed(currentRightSpeed);
 			}
-			
+
 			else if (this.distance > (bandCenter - bandWidth)) {
-				//Need to turn left
-				//Decrease left motor speed proportionally to error
-				//Increase right motor speed proportionally to error
+				// Need to turn left
+				// Decrease left motor speed proportionally to error
+				// Increase right motor speed proportionally to error
 				currentRightSpeed = (MOTOR_SPEED * error) / bandWidth;
 				currentLeftSpeed = (MOTOR_SPEED * bandWidth) / error;
-				
-				//we don't want the motor to run too fast, so we add a min and max speed
+
+				// we don't want the motor to run too fast, so we add a min and max speed
 				if (currentRightSpeed > 400) {
 					currentRightSpeed = 425;
 				}
 				if (currentLeftSpeed < 100) {
 					currentLeftSpeed = 125;
 				}
-				
-				//Change motor speeds
+
+				// Change motor speeds
 				WallFollowingLab.leftMotor.setSpeed(currentLeftSpeed);
 				WallFollowingLab.rightMotor.setSpeed(currentRightSpeed);
 			}
