@@ -24,6 +24,7 @@ public class BangBangController implements UltrasonicController {
 
 	/*
 	 * This method sets up variable data and starts driving the robot forward in a straight line.
+	 * It takes in the bandCenter, the bandWidth and the high and low motor speeds.
 	 */
 	public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh) {
 		// Default Constructor

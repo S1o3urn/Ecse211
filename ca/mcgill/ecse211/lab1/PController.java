@@ -23,6 +23,7 @@ public class PController implements UltrasonicController {
 	
 	/*
 	 * This method sets up variable data and starts driving the robot forward in a straight line.
+	 * It takes in the bandCenterand bandwidth
 	 */
 	public PController(int bandCenter, int bandwidth) {
 		this.bandCenter = bandCenter;
