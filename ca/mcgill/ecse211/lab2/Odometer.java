@@ -20,6 +20,8 @@ public class Odometer extends OdometerData implements Runnable {
   // Motors and related variables
   private int leftMotorTachoCount;
   private int rightMotorTachoCount;
+  private int lastLeftMotorTachoCount;
+  private int lastRightMotorTachoCount;
   private EV3LargeRegulatedMotor leftMotor;
   private EV3LargeRegulatedMotor rightMotor;
 
@@ -27,6 +29,8 @@ public class Odometer extends OdometerData implements Runnable {
   private final double WHEEL_RAD;
 
   private double[] position;
+  private double leftWheelDistance;
+  private double rightWheelDistance;
 
 
   private static final long ODOMETER_PERIOD = 25; // odometer update period in ms
@@ -51,7 +55,8 @@ public class Odometer extends OdometerData implements Runnable {
 
     this.leftMotorTachoCount = 0;
     this.rightMotorTachoCount = 0;
-
+    lastLeftMotorTachoCount = this.leftMotorTachoCount;
+    lastRightMotorTachoCount = this.rightMotorTachoCount;
     this.TRACK = TRACK;
     this.WHEEL_RAD = WHEEL_RAD;
 
@@ -106,6 +111,15 @@ public class Odometer extends OdometerData implements Runnable {
       rightMotorTachoCount = rightMotor.getTachoCount();
 
       // TODO Calculate new robot position based on tachometer counts
+     
+      //Calculate distance traveled for each wheel in metric units
+      leftWheelDistance = Math.PI * WHEEL_RAD * (leftMotorTachoCount - lastLeftMotorTachoCount)/180;
+      rightWheelDistance = Math.PI * WHEEL_RAD * (rightMotorTachoCount - lastRightMotorTachoCount)/180;
+      
+      //Save current tacho count to check with next cycle
+      lastLeftMotorTachoCount = leftMotorTachoCount;
+      lastRightMotorTachoCount = rightMotorTachoCount;
+      
       
       // TODO Update odometer values with new calculated values
       odo.update(0.5, 1.8, 20.1);

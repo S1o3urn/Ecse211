@@ -12,7 +12,7 @@ public class SquareDriver {
 
   /**
    * This method is meant to drive the robot in a square of size 2x2 Tiles. It is to run in parallel
-   * with the odometer and Odometer correcton classes allow testing their functionality.
+   * with the odometer and Odometer correction classes to allow testing their functionality.
    * 
    * @param leftMotor
    * @param rightMotor

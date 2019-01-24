@@ -1,6 +1,3 @@
-/*
- * OdometryCorrection.java
- */
 package ca.mcgill.ecse211.lab2;
 
 public class OdometryCorrection implements Runnable {
