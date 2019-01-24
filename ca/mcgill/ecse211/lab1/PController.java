@@ -66,8 +66,10 @@ public class PController implements UltrasonicController {
 		// meaning there could be nothing there to scan
 		else if (distance == 255) {
 			this.distance = distance;
+			/*
 			WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED + 150);
 			WallFollowingLab.rightMotor.setSpeed(300);
+			*/
 		}
 
 		// Filtered values
@@ -88,7 +90,9 @@ public class PController implements UltrasonicController {
 			// Robot is on right path, advance straight
 			if ((this.distance >= (bandCenter - bandWidth)) && (this.distance <= (bandCenter + bandWidth))) {
 				WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED);
-				WallFollowingLab.leftMotor.setSpeed(MOTOR_SPEED);
+				WallFollowingLab.rightMotor.setSpeed(MOTOR_SPEED);
+				WallFollowingLab.leftMotor.forward();
+				WallFollowingLab.rightMotor.forward();
 			}
 
 			// Robot is too close to wall
@@ -96,12 +100,12 @@ public class PController implements UltrasonicController {
 				// Need to turn right
 				// Increase left motor speed proportionally to error
 				// Decrease right motor speed proportionally to error
-				currentLeftSpeed = (int) (0.75 * (MOTOR_SPEED * error) / bandWidth);
-				currentRightSpeed = (MOTOR_SPEED * bandWidth) / error;
+				currentLeftSpeed = (int) (0.95 * (MOTOR_SPEED * error) / bandWidth);
+				currentRightSpeed = (int) (0.1 * (MOTOR_SPEED * bandWidth) / error);
 
 				// Set a speed limit to avoid overworking motors
-				if (currentLeftSpeed > 400) {
-					currentLeftSpeed = 425;
+				if (currentLeftSpeed > 200) {
+					currentLeftSpeed = 225;
 				}
 
 				if (currentRightSpeed < 100) {
@@ -111,18 +115,20 @@ public class PController implements UltrasonicController {
 				// Change motor speeds
 				WallFollowingLab.leftMotor.setSpeed(currentLeftSpeed);
 				WallFollowingLab.rightMotor.setSpeed(currentRightSpeed);
+				WallFollowingLab.leftMotor.forward();
+				WallFollowingLab.rightMotor.backward();
 			}
 
 			else if (this.distance > (bandCenter - bandWidth)) {
 				// Need to turn left
 				// Decrease left motor speed proportionally to error
 				// Increase right motor speed proportionally to error
-				currentRightSpeed = (MOTOR_SPEED * error) / bandWidth;
-				currentLeftSpeed = (MOTOR_SPEED * bandWidth) / error;
+				currentRightSpeed = (int) (0.9 * MOTOR_SPEED * error) / bandWidth;
+				currentLeftSpeed = (int) (0.85 * MOTOR_SPEED * bandWidth) / error;
 
 				// we don't want the motor to run too fast, so we add a min and max speed
-				if (currentRightSpeed > 400) {
-					currentRightSpeed = 425;
+				if (currentRightSpeed > 200) {
+					currentRightSpeed = 225;
 				}
 				if (currentLeftSpeed < 100) {
 					currentLeftSpeed = 125;
@@ -131,6 +137,8 @@ public class PController implements UltrasonicController {
 				// Change motor speeds
 				WallFollowingLab.leftMotor.setSpeed(currentLeftSpeed);
 				WallFollowingLab.rightMotor.setSpeed(currentRightSpeed);
+				WallFollowingLab.leftMotor.forward();
+				WallFollowingLab.rightMotor.forward();
 			}
 		}
 	}

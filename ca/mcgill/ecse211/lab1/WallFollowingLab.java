@@ -11,10 +11,10 @@ public class WallFollowingLab {
 
   // Parameters: adjust these for desired performance
 
-  private static final int bandCenter = 50; // Offset from the wall (cm)
+  private static final int bandCenter = 30; // Offset from the wall (cm)
   private static final int bandWidth = 2; // Width of dead band (cm)
-  private static final int motorLow = 100; // Speed of slower rotating wheel (deg/sec)
-  private static final int motorHigh = 200; // Speed of the faster rotating wheel (deg/seec)
+  private static final int motorLow = 50; // Speed of slower rotating wheel (deg/sec)
+  private static final int motorHigh = 100; // Speed of the faster rotating wheel (deg/seec)
 
   //Left motor connected to port A
   //Right motor connected to port D

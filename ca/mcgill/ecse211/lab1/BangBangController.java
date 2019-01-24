@@ -20,7 +20,7 @@ public class BangBangController implements UltrasonicController {
 	private final int motorHigh;
 	private int distance; // simulated distance
 	private int filterControl; // filter threshold
-	private int speedIncrease = 100;
+	private int speedIncrease = 150;
 
 	/*
 	 * This method sets up variable data and starts driving the robot forward in a
@@ -76,10 +76,10 @@ public class BangBangController implements UltrasonicController {
 
 		// Robot is too close and doesn't have enough space to turn anymore
 		// Drive robot backwards turning slightly right to reposition better
-		if (distance <= 25) {
-			WallFollowingLab.leftMotor.setSpeed(motorHigh);
-			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
-			WallFollowingLab.leftMotor.backward();
+		if (distance <= 15) {
+			WallFollowingLab.leftMotor.setSpeed(motorLow);
+			WallFollowingLab.rightMotor.setSpeed((int) (motorHigh + (speedIncrease*(1.5))));
+			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.backward();
 		}
 
@@ -98,8 +98,8 @@ public class BangBangController implements UltrasonicController {
 		// Robot is on the outside of the offset and over the bandwidth
 		// Robot will steer left
 		else if ((distance > (bandCenter + bandwidth))) {
-			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease / 2));
-			WallFollowingLab.rightMotor.setSpeed(motorHigh + speedIncrease);
+			WallFollowingLab.leftMotor.setSpeed(motorHigh - (speedIncrease / 6));
+			WallFollowingLab.rightMotor.setSpeed(motorHigh + (speedIncrease/6));
 			WallFollowingLab.leftMotor.forward();
 			WallFollowingLab.rightMotor.forward();
 		}
