@@ -1,18 +1,31 @@
 package ca.mcgill.ecse211.lab2;
 
 import lejos.hardware.*;
-import lejos.hardware.lcd.LCD;
-import lejos.hardware.port.SensorPort;
+import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
-import lejos.utility.Delay;
+import lejos.hardware.sensor.SensorModes;
+import lejos.robotics.SampleProvider;
+import lejos.hardware.Sound;
 
 public class OdometryCorrection implements Runnable {
+  private static final double TILE_MEASURE = 30.48;
   private static final long CORRECTION_PERIOD = 10;
   private Odometer odometer;
-  EV3ColorSensor colourSensor;
+
+  private static final Port colourSampler = LocalEV3.get().getPort("S4");
+  
+  private SensorModes colourSamplerSensor = new EV3ColorSensor(colourSampler);
+  private SampleProvider colourSensorValue = colourSamplerSensor.getMode("Red");
+  
+  private float[] colourSensorValues = newfloat[colourSamplerSensor.sampleSize()];
+  
+  private float lastValue = 0;
+  
   private int xCounter = 0;
   private int yCounter = 0;
-  private double error = 0.2;
+  
+  private double theta;
   /**
    * This is the default class constructor. An existing instance of the odometer is used. This is to
    * ensure thread safety.
@@ -22,9 +35,6 @@ public class OdometryCorrection implements Runnable {
   public OdometryCorrection() throws OdometerExceptions {
 
     this.odometer = Odometer.getOdometer();
-    //Create a colour sensor and attach to a port
-    colourSensor = new EV3ColorSensor(SensorPort.S4);
-
   }
 
   /**
@@ -39,15 +49,21 @@ public class OdometryCorrection implements Runnable {
     while (true) {
       correctionStart = System.currentTimeMillis();
       
-      //Display current X and Y as if starting from initial position
-      LCD.drawInt(xCounter, 0, 4);
-      LCD.drawInt(yCounter, 0, 5);
       
       // TODO Trigger correction (When do I have information to correct?)
-      //Check if a black line exists
-      if(colourSensor.getColorIDMode().equals("1"));
-      Delay.msDelay(100);
-      Sound.beep();
+      //Check if theres a black line
+      //Get data from colour sensor
+      colourSensorValue.fetchSample(colourSensorValues, 0);
+      //Scale up for simpler computations
+      float value = colourSensorValues[0] * 1000;
+      //Find the derivative
+      float difference = value - lastValue;
+      lastValue = value;
+      //There is a black line
+      if(difference < -50) {
+    	  Sound.beep();
+    	  
+      }
       
       // TODO Calculate new (accurate) robot position
       
