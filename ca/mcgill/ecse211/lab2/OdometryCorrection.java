@@ -22,9 +22,9 @@ public class OdometryCorrection implements Runnable {
 
 	private float lastValue = 0;
 
-	private int xCounter = 0;
-	private int yCounter = 0;
-	private double theta;
+	private int xCounter = 0; // Keeps track of how many tiles driven on the x-axis
+	private int yCounter = 0; // Keeps track of how many tiles driven on the y-axis
+	private double theta; // Absolute angle of the robot in relation with a fixed plane
 
 	private double[] position;
 
@@ -43,6 +43,10 @@ public class OdometryCorrection implements Runnable {
 	 * Here is where the odometer correction code should be run.
 	 * 
 	 * @throws OdometerExceptions
+	 * 
+	 *             This method detects and keeps track of black lines on the floor
+	 *             and its corresponding direction. With this information, more
+	 *             accurate x-y coordinates are computed.
 	 */
 	// run method (required for Thread)
 	public void run() {
@@ -69,21 +73,26 @@ public class OdometryCorrection implements Runnable {
 				position = odometer.getXYT();
 				theta = position[2] * 180 / Math.PI;
 
+				// Split into 4 directions for navigation
+				// East side
 				if ((theta <= 360 && theta >= 315) || (theta >= 0 && theta <= 45)) {
 					odometer.setY(yCounter * TILE_MEASURE);
 					yCounter++;
 				}
 
+				// North side
 				else if (theta > 45 && theta <= 315) {
 					odometer.setX(xCounter * TILE_MEASURE);
 					xCounter++;
 				}
 
+				// West side
 				else if (theta > 135 && theta <= 225) {
 					yCounter--;
 					odometer.setY(yCounter * TILE_MEASURE);
 				}
 
+				// South zone
 				else if (theta > 225 && theta < 315) {
 					xCounter--;
 					odometer.setX(xCounter * TILE_MEASURE);
@@ -98,7 +107,7 @@ public class OdometryCorrection implements Runnable {
 				}
 			}
 
-			// this ensure the odometry correction occurs only once every period
+			// This ensure the odometry correction occurs only once every period
 			correctionEnd = System.currentTimeMillis();
 			if (correctionEnd - correctionStart < CORRECTION_PERIOD) {
 				try {
