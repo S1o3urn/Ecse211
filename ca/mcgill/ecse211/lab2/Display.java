@@ -51,7 +51,7 @@ public class Display implements Runnable {
       // Retrieve x, y and Theta information
       position = odo.getXYT();
       
-      // Print x,y, and theta information
+      // Print x,y, and theta (in degrees) information
       DecimalFormat numberFormat = new DecimalFormat("######0.00");
       lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);
       lcd.drawString("Y: " + numberFormat.format(position[1]), 0, 1);

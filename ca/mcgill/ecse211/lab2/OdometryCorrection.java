@@ -65,8 +65,8 @@ public class OdometryCorrection implements Runnable {
 			float difference = value - lastValue;
 			lastValue = value;
 			// There is a black line
-			if (difference < -50) {
-				Sound.beep();
+			if (difference < -40) {
+				Sound.twoBeeps();
 
 				// TODO Calculate new (accurate) robot position
 				// TODO Update odometer with new calculated (and more accurate) values
@@ -75,27 +75,27 @@ public class OdometryCorrection implements Runnable {
 
 				// Split into 4 directions for navigation
 				// East side
-				if ((theta <= 360 && theta >= 315) || (theta >= 0 && theta <= 45)) {
-					odometer.setY(yCounter * TILE_MEASURE);
-					yCounter++;
+				if ((theta > 315 && theta <= 360) || (theta >= 0 && theta <= 45)) {
+					odometer.setX(yCounter * TILE_MEASURE);
+					xCounter++;
 				}
 
 				// North side
-				else if (theta > 45 && theta <= 315) {
-					odometer.setX(xCounter * TILE_MEASURE);
-					xCounter++;
+				else if (theta > 45 && theta <= 135) {
+					odometer.setY(xCounter * TILE_MEASURE);
+					yCounter++;
 				}
 
 				// West side
 				else if (theta > 135 && theta <= 225) {
-					yCounter--;
-					odometer.setY(yCounter * TILE_MEASURE);
+					xCounter--;
+					odometer.setX(yCounter * TILE_MEASURE);
 				}
 
 				// South zone
-				else if (theta > 225 && theta < 315) {
-					xCounter--;
-					odometer.setX(xCounter * TILE_MEASURE);
+				else if (theta > 225 && theta <= 315) {
+					yCounter--;
+					odometer.setY(xCounter * TILE_MEASURE);
 				}
 
 				try {
