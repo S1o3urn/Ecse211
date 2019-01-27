@@ -61,7 +61,7 @@ public class OdometryCorrection implements Runnable {
 			colourSensorValue.fetchSample(colourSensorValues, 0);
 			// Scale up for simpler computations
 			float value = colourSensorValues[0] * 1000;
-			// Find the derivative
+			// Find the difference
 			float difference = value - lastValue;
 			lastValue = value;
 			// There is a black line
