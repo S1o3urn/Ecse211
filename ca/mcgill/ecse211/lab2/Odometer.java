@@ -60,8 +60,8 @@ public class Odometer extends OdometerData implements Runnable {
 
     this.leftMotorTachoCount = 0;
     this.rightMotorTachoCount = 0;
-    lastLeftMotorTachoCount = this.leftMotorTachoCount;
-    lastRightMotorTachoCount = this.rightMotorTachoCount;
+    //lastLeftMotorTachoCount = this.leftMotorTachoCount;
+    //lastRightMotorTachoCount = this.rightMotorTachoCount;
     this.TRACK = TRACK;
     this.WHEEL_RAD = WHEEL_RAD;
 
