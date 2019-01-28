@@ -69,7 +69,7 @@ public class OdometryCorrection implements Runnable {
 			// Find the difference
 			float difference = value - lastValue;
 			lastValue = value;
-			// There is a black line
+			// Notify there is a black line
 			if (difference < -40) {
 				Sound.twoBeeps();
 
@@ -110,7 +110,7 @@ public class OdometryCorrection implements Runnable {
 				else if (theta > 135 && theta <= 225) {
 					if(xCounterWestbound == 0) {
 						position = odometer.getXYT();
-						startXDistance = (3 * TILE_MEASURE) - position[1];
+						startXDistance = (3 * TILE_MEASURE) - position[0];
 						xCounterWestbound++;
 					}
 					else {
