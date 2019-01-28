@@ -127,15 +127,15 @@ public class Odometer extends OdometerData implements Runnable {
       
       //Find deltaDistance, deltaTheta
       deltaDistance = (leftWheelDistance + rightWheelDistance)/2;
-      deltaTheta = (leftWheelDistance - rightWheelDistance)/TRACK;
+      deltaTheta = ((leftWheelDistance - rightWheelDistance)/TRACK) * 180 / Math.PI;
       
       //get data and add deltaTheta to Theta
       position = odo.getXYT();
       position[2] += deltaTheta;
       
       //Find Dx and Dy
-      deltaX = deltaDistance * Math.sin(position[2]);
-      deltaY = deltaDistance * Math.cos(position[2]);
+      deltaX = deltaDistance * Math.sin(position[2] * Math.PI / 180);
+      deltaY = deltaDistance * Math.cos(position[2] * Math.PI / 180);
             
       // TODO Update odometer values with new calculated values
       odo.update(deltaX, deltaY, deltaTheta);
