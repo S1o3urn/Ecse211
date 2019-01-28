@@ -8,7 +8,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class SquareDriver {
   private static final int FORWARD_SPEED = 250;
   private static final int ROTATE_SPEED = 150;
-  private static final double TILE_SIZE = 30.000;	//In cm
+  private static final double TILE_SIZE = 30.48;	//In cm
 
   /**
    * This method is meant to drive the robot in a square of size 2x2 Tiles. It is to run in parallel

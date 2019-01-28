@@ -9,7 +9,7 @@ import lejos.robotics.SampleProvider;
 import lejos.hardware.Sound;
 
 public class OdometryCorrection implements Runnable {
-	private static final double TILE_MEASURE = 30.000; //30.48
+	private static final double TILE_MEASURE = 30.48; // 30.48
 	private static final long CORRECTION_PERIOD = 10;
 	private Odometer odometer;
 
@@ -23,18 +23,23 @@ public class OdometryCorrection implements Runnable {
 	private float lastValue = 0;
 
 	private int xCounterEastbound = 0; // Keeps track of how many tiles driven on the x-axis
-	private int yCounterNorthbound = 0; 
+	private int yCounterNorthbound = 0;
 	private int xCounterWestbound = 0;
-	private int yCounterSouthbound  = 0;
+	private int yCounterSouthbound = 0;
+
 	private double theta; // Absolute angle of the robot in relation with a fixed plane
-	
+
 	private double startNorthboundDistance = 0;
 	private double startEastboundDistance = 0;
 	private double startWestboundDistance = 0;
 	private double startSouthboundDistance = 0;
+	
+	private double firstLineSouthbound;
+	private double firstLineWestbound;
+	private double topSouthDistance;
+	private double topWestDistance;
 
 	private double[] position;
-	private double[] location;
 
 	/**
 	 * This is the default class constructor. An existing instance of the odometer
@@ -82,56 +87,57 @@ public class OdometryCorrection implements Runnable {
 				theta = position[2] * 180 / Math.PI;
 
 				// Split into 4 directions for navigation
-				// East side
-				if (theta > 45 && theta < 135) {
-					if(xCounterEastbound == 0) {
-						location = odometer.getXYT();
-						startEastboundDistance = location[0];
-						xCounterEastbound++;
-					}
-					
-					else {
-						xCounterEastbound++;
-						odometer.setX((xCounterEastbound * TILE_MEASURE) - (TILE_MEASURE - startEastboundDistance));
-					}
-				}
-
 				// North side
-				else if ((theta > 315 && theta <= 360) || (theta >= 0 && theta < 45)) {
-					if(yCounterNorthbound == 0) {
-						location = odometer.getXYT();
-						startNorthboundDistance = location[1];
+				if ((theta > 315 && theta <= 360) || (theta >= 0 && theta < 45)) {
+
+					if (yCounterNorthbound == 0) {
+						startNorthboundDistance = position[1];
 						yCounterNorthbound++;
-					}
-					else {
+					} else {
+						odometer.setY(yCounterNorthbound * TILE_MEASURE + startNorthboundDistance);
 						yCounterNorthbound++;
-						odometer.setY((yCounterNorthbound * TILE_MEASURE) - (TILE_MEASURE - startNorthboundDistance));
 					}
 				}
-
-				// West side
-				else if (theta > 225 && theta < 315) {
-					if(xCounterWestbound == 0) {
-						location = odometer.getXYT();
-						startWestboundDistance = (3 * TILE_MEASURE) - location[0];
-						xCounterWestbound++;
-					}
-					else {
-						xCounterWestbound++;
-						odometer.setX((xCounterWestbound * TILE_MEASURE) - startWestboundDistance);
+				
+				// East side
+				else if (theta > 45 && theta < 135) {
+					// first black line while traveling east relative to starting position
+					if (xCounterEastbound == 0) {
+						// store distance traveled until first black line encountered
+						startEastboundDistance = position[0];
+						xCounterEastbound++;
+					} else {
+						odometer.setX(xCounterEastbound * TILE_MEASURE + startEastboundDistance);
+						xCounterEastbound++;
+						startSouthboundDistance = position[1];
+						
 					}
 				}
 
 				// South zone
 				else if (theta > 135 && theta < 225) {
-					if(yCounterSouthbound == 0) {
-						location = odometer.getXYT();
-						startSouthboundDistance = (3 * TILE_MEASURE) - location[1];
+					if (yCounterSouthbound == 0) {
+						firstLineSouthbound = position[1];
+						topSouthDistance = startSouthboundDistance - firstLineSouthbound;
+						odometer.setY(topSouthDistance);
 						yCounterSouthbound++;
+					} else {
+						odometer.setY(topSouthDistance - (yCounterSouthbound * TILE_MEASURE));
+						yCounterSouthbound++;
+						startWestboundDistance = position[0];
 					}
-					else {
-						yCounterSouthbound++;
-						odometer.setY((yCounterSouthbound * TILE_MEASURE) - startSouthboundDistance);
+				}
+				
+				// West side
+				else if (theta > 225 && theta < 315) {
+					if (xCounterWestbound == 0) {
+						firstLineWestbound = position[0];
+						topWestDistance = startWestboundDistance - firstLineWestbound;
+						odometer.setX(topWestDistance);
+						xCounterWestbound++;
+					} else {
+						odometer.setX(topWestDistance - (xCounterWestbound * TILE_MEASURE));
+						xCounterWestbound++;
 					}
 				}
 
