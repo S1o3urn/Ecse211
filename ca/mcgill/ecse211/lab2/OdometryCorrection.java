@@ -31,7 +31,7 @@ public class OdometryCorrection implements Runnable {
 	private double startNorthboundDistance = 0;
 	private double startEastboundDistance = 0;
 	private double startWestboundDistance = 0;
-	private double startSouthboundDistance = 2;
+	private double startSouthboundDistance = 0;
 
 	private double[] position;
 	private double[] location;
