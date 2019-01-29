@@ -80,12 +80,21 @@ public class OdometryCorrection implements Runnable {
 			// Notify there is a black line
 			if (difference < -40) {
 				Sound.twoBeeps();
-
+				
 				// TODO Calculate new (accurate) robot position
 				// TODO Update odometer with new calculated (and more accurate) values
 				position = odometer.getXYT();
 				theta = position[2] * 180 / Math.PI;
-
+				
+				//Since our motors and wheels are highly unpredictable, we modify the TRACK value in order to compensate for it
+				if((theta > 0 && theta < 2) || (theta > 90 && theta <92) || (theta > 180 && theta < 182) || (theta > 270 && theta < 272)) {
+					Lab2.TRACK = 13.25;
+				}
+				
+				if((theta > 358 && theta < 360) || (theta > 88 && theta < 90) || (theta > 178 && theta < 180) || (theta > 268 && theta < 270)) {
+					Lab2.TRACK = 13.15;
+				}
+				
 				// Split into 4 directions for navigation
 				// North side
 				if ((theta > 315 && theta <= 360) || (theta >= 0 && theta < 45)) {
