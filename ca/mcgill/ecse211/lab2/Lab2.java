@@ -1,6 +1,9 @@
 // Lab2.java
 package ca.mcgill.ecse211.lab2;
 
+/*
+ * This class displays user settings to switch between use modes
+ */
 import ca.mcgill.ecse211.lab2.*;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
@@ -16,8 +19,8 @@ public class Lab2 {
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
   private static final TextLCD lcd = LocalEV3.get().getTextLCD();
   public static final double WHEEL_RAD = 2.1;
-  public static final double TRACK = 13.12; //13.2
-
+  public static double TRACK = 13.25;
+  
   public static void main(String[] args) throws OdometerExceptions {
 
     int buttonChoice;

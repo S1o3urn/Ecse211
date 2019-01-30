@@ -1,5 +1,8 @@
 package ca.mcgill.ecse211.lab2;
 
+/*
+ * This class corrects the calculated positions in the Odometer class and updates its values
+ */
 import lejos.hardware.*;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.port.Port;
@@ -9,7 +12,7 @@ import lejos.robotics.SampleProvider;
 import lejos.hardware.Sound;
 
 public class OdometryCorrection implements Runnable {
-	private static final double TILE_MEASURE = 30.000; //30.48
+	private static final double TILE_MEASURE = 30.48; // 30.48
 	private static final long CORRECTION_PERIOD = 10;
 	private Odometer odometer;
 
@@ -22,19 +25,33 @@ public class OdometryCorrection implements Runnable {
 
 	private float lastValue = 0;
 
-	private int xCounterEastbound = 0; // Keeps track of how many tiles driven on the x-axis
-	private int yCounterNorthbound = 0; 
-	private int xCounterWestbound = 0;
-	private int yCounterSouthbound  = 0;
-	private double theta; // Absolute angle of the robot in relation with a fixed plane
-	
+	/*
+	 * private int xCounterEastbound = 0; // Keeps track of how many tiles driven on
+	 * the x-axis private int yCounterNorthbound = 0; private int xCounterWestbound
+	 * = 0; private int yCounterSouthbound = 0;
+	 */
+	private int yCounterNorthbound = 0;
 	private double startNorthboundDistance = 0;
-	private double startEastboundDistance = 0;
-	private double startWestboundDistance = 0;
-	private double startSouthboundDistance = 0;
+	private double theta; // Absolute angle of the robot in relation with a fixed plane
+
+	/*
+	 * private double startNorthboundDistance = 0; private double
+	 * startEastboundDistance = 0; private double startWestboundDistance = 0;
+	 * private double startSouthboundDistance = 0;
+	 * 
+	 * private double firstLineSouthbound; private double firstLineWestbound;
+	 * private double topSouthDistance; private double topWestDistance;
+	 */
 
 	private double[] position;
-	private double[] location;
+
+	/*
+	 * private double northY = 0; private double eastX = 0; private double southY =
+	 * 0; private double westX = 0;
+	 */
+
+	double counterY = 1;
+	double counterX = 1;
 
 	/**
 	 * This is the default class constructor. An existing instance of the odometer
@@ -80,59 +97,35 @@ public class OdometryCorrection implements Runnable {
 				// TODO Update odometer with new calculated (and more accurate) values
 				position = odometer.getXYT();
 				theta = position[2] * 180 / Math.PI;
-
-				// Split into 4 directions for navigation
-				// East side
-				if (theta > 45 && theta < 135) {
-					if(xCounterEastbound == 0) {
-						location = odometer.getXYT();
-						startEastboundDistance = location[0];
-						xCounterEastbound++;
-					}
-					
-					else {
-						xCounterEastbound++;
-						odometer.setX((xCounterEastbound * TILE_MEASURE) - (TILE_MEASURE - startEastboundDistance));
-					}
-				}
-
-				// North side
-				else if ((theta > 315 && theta <= 360) || (theta >= 0 && theta < 45)) {
-					if(yCounterNorthbound == 0) {
-						location = odometer.getXYT();
-						startNorthboundDistance = location[1];
+				
+				//Depending on theta, knows which direction the robot is going and calculates correct distance
+				//Heading north relative to origin
+				if ((theta <= 360 && theta >= 315) || (theta >= 0 && theta <= 45)) {
+					//Find distance from starting position to first black line
+					if (yCounterNorthbound == 0) {
+						startNorthboundDistance = position[1];
 						yCounterNorthbound++;
-					}
+					} 
+					//For every other line, add a tile measures length
 					else {
-						yCounterNorthbound++;
-						odometer.setY((yCounterNorthbound * TILE_MEASURE) - (TILE_MEASURE - startNorthboundDistance));
+						odometer.setY(counterY * TILE_MEASURE + startNorthboundDistance);
+						counterY++;
 					}
-				}
-
-				// West side
+				} 
+				//Heading east
+				else if (theta > 45 && theta <= 135) {
+					odometer.setX(counterX * TILE_MEASURE);
+					counterX++;
+				} 
+				//Heading south
+				else if (theta > 135 && theta <= 225) {
+					counterY--;
+					odometer.setY((counterY - 1) * TILE_MEASURE + startNorthboundDistance);
+				} 
+				//Heading west
 				else if (theta > 225 && theta < 315) {
-					if(xCounterWestbound == 0) {
-						location = odometer.getXYT();
-						startWestboundDistance = (3 * TILE_MEASURE) - location[0];
-						xCounterWestbound++;
-					}
-					else {
-						xCounterWestbound++;
-						odometer.setX((xCounterWestbound * TILE_MEASURE) - startWestboundDistance);
-					}
-				}
-
-				// South zone
-				else if (theta > 135 && theta < 225) {
-					if(yCounterSouthbound == 0) {
-						location = odometer.getXYT();
-						startSouthboundDistance = (3 * TILE_MEASURE) - location[1];
-						yCounterSouthbound++;
-					}
-					else {
-						yCounterSouthbound++;
-						odometer.setY((yCounterSouthbound * TILE_MEASURE) - startSouthboundDistance);
-					}
+					counterX--;
+					odometer.setX(counterX * TILE_MEASURE);
 				}
 
 				try {
