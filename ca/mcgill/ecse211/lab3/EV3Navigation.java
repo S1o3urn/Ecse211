@@ -37,7 +37,7 @@ public class EV3Navigation {
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
 		Display odometryDisplay = new Display(odometer, text);
 		Navigation navigation = new Navigation(odometer, leftMotor, rightMotor);
-		ObstacleAvoidanceNavigation advancedNavigation = new AdvancedNavigation(odometer,leftMotor, rightMotor, sensorMotor, ultrasonicDistance, ultrasonicData);
+		ObstacleAvoidanceNavigation advancedNavigation = new ObstacleAvoidanceNavigation(odometer,leftMotor, rightMotor, sensorMotor, ultrasonicDistance, ultrasonicData);
 		
 		
 		do {
