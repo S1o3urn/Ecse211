@@ -24,7 +24,7 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	private static final int RIGHT_ANGLE = 55;
 	private static final int LEFT_ANGLE = -55;
 	private static final int MAX_TACHO_COUNT = 10;
-	private static final int OBSTACLE_SENSOR_ANGLE = 80;
+	private static final int OBSTACLE_SENSOR_ANGLE = 45;
 	private static final int OBSTACLE_FWD_SPEED = 150;
 	private static final int OBSTACLE_TURN_IN_SPEED = 275;
 	private static final int OBSTACLE_TURN_OUT_SPEED = 60;
@@ -213,19 +213,20 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	 */
 	public void avoidObstacle() {
 		turnTo(odometer.getTheta() - PI / 2);
-		// adjust the robot heading to ensure the avoidance of obstacles
+		
+		// Adjust sensor motor to peak angle for obstacle detection
 		sensorMotor.rotateTo(OBSTACLE_SENSOR_ANGLE);
 
-		// define the exit condition of avoidance mode
+		// Define when to stop obstacle avoidance
 		double endAngle = odometer.getTheta() + PI * 0.8;
 
-		// engage bangbang controller to avoid the obstacle
+		// Bang-Bang controller like logic to avoid obstacle
 		while (odometer.getTheta() < endAngle) {
-			ultrasonicSensor.fetchSample(ultrasonicData, 0); // acquire data
-			sensorDistance = (int) (ultrasonicData[0] * 100.0); // extract from buffer, cast to int
+			ultrasonicSensor.fetchSample(ultrasonicData, 0);
+			sensorDistance = (int) (ultrasonicData[0] * 100.0);
 			int errorDistance = bandCenter - sensorDistance;
 
-			//Drive straight
+			// Drive straight
 			if (Math.abs(errorDistance) <= bandWidth) {
 				leftMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
@@ -233,28 +234,35 @@ public class ObstacleAvoidanceNavigation extends Thread {
 				rightMotor.forward();
 			} 
 			
-			//
-			else if (errorDistance > 0) { // too close to wall
-				leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);// Setting the outer wheel to reverse
+			// Robot is on the inside of the offset and over the bandwidth
+			else if (errorDistance > 0) {
+				// Turn left
+				leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);
 				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				leftMotor.backward();
 				rightMotor.forward();
 			} 
 			
-			// 
-			else if (errorDistance < 0) { // getting too far from the wall
+			// Robot is on the outside of the offset and over the bandwidth
+			else if (errorDistance < 0) {
+				// Turn right
+				leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);
 				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
-				leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);// Setting the outer wheel to move faster
-				rightMotor.forward();
 				leftMotor.forward();
+				rightMotor.forward();
 			}
 		}
-		Sound.beep();
+		
+		// Finished cornering the obstacle
 		leftMotor.stop();
 		rightMotor.stop();
 
 	}
 
+	/**
+	 * This method fetches the distance measured by the ultrasonic sensor
+	 * @return sensorDistance
+	 */
 	public int readUSDistance() {
 		return this.sensorDistance;
 	}
