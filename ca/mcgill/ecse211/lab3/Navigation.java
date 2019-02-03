@@ -1,5 +1,8 @@
 package ca.mcgill.ecse211.lab3;
 
+/* 
+ * This method implements the normal navigation through waypoints 
+ */
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
@@ -22,7 +25,7 @@ public class Navigation extends Thread {
 	private static final double PI = Math.PI;
 	
 	
-	private static boolean travelling = false;
+	private static boolean onTheMove = false;
 
 	@Override
 	public void run() {
@@ -40,12 +43,12 @@ public class Navigation extends Thread {
 	public void travelTo(double x, double y) {
 		
 		//reset motors
-		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {leftMotor, rightMotor}) {
-			motor.stop();
-			motor.setAcceleration(3000);
-		}
+			leftMotor.stop();
+			rightMotor.stop();
+			leftMotor.setAcceleration(3000);
+			rightMotor.setAcceleration(3000);
 		
-		travelling = true;
+		onTheMove = true;
 		
 		//calculate trajectory path and angle
 		double trajectoryX = x - odometer.getX();
@@ -86,7 +89,7 @@ public class Navigation extends Thread {
 	 */
 	
 	public boolean isNavigating() {
-		return travelling;
+		return onTheMove;
 	}
 	
 	

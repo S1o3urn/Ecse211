@@ -1,25 +1,41 @@
 package ca.mcgill.ecse211.lab3;
 
+/*
+ * This class implements the odometer functionality.
+ * Given the wheel radius, the speed at which is travels and the tachometer count, 
+ * it is then possible to calculate the distance traveled
+ * in both an x and y axis defined at program launch time.
+ *  
+ * We chose to model this class after previous year odometer classes 
+ * since it utilises 1 class rather than both an odometer and an odometerData class
+ */
+
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class Odometer extends Thread {
-	
-	// Robot positioning and motors
-	private double x, y, theta;
-	private int leftMotorTachoCount, rightMotorTachoCount;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
+
+	// Robot positioning
+	private double x;
+	private double y;
+	private double theta;
+
+	// Motors
+	private int leftMotorTachoCount;
+	private int rightMotorTachoCount;
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
 
 	// Odometer update period, in ms
 	private static final long ODOMETER_PERIOD = 25;
 
 	// Wheel Radius and Wheel Distance
-	public static final double WR = EV3Navigation.WHEEL_RADIUS;
+	public static final double WR = EV3Navigation.WHEEL_RADIUS; // Same values as lab2
 	public static final double WD = EV3Navigation.WHEEL_BASE;
 	public static final double PI = Math.PI;
 
 	// Lock object for mutual exclusion
 	private Object lock;
-	
+
 	// Default constructor
 	public Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
 		this.leftMotor = leftMotor;
@@ -34,42 +50,62 @@ public class Odometer extends Thread {
 
 	// Run method (required for Thread)
 	public void run() {
-		long updateStart, updateEnd;
-		int currentTachoL, currentTachoR, lastTachoL, lastTachoR;
-		double distL, distR, dDistance, dTheta, dX, dY;
+
+		// Time tracking
+		long updateStart;
+		long updateEnd;
+
+		// Tachometer count tracking
+		int leftMotorTachoCount;
+		int rightMotorTachoCount;
+		int lastLeftMotorTachoCount;
+		int lastRightMotorTachoCount;
+
+		// Calculated measures
+		double leftDistance;
+		double rightDistance;
+		double deltaDistance;
+		double deltaTheta;
+		double deltaX;
+		double deltaY;
+
+		// Reset and initialize tachometer count to 0
 		leftMotor.resetTachoCount();
 		rightMotor.resetTachoCount();
-		lastTachoL = leftMotor.getTachoCount();
-		lastTachoR = rightMotor.getTachoCount();
+		lastLeftMotorTachoCount = leftMotor.getTachoCount();
+		lastRightMotorTachoCount = rightMotor.getTachoCount();
 
 		while (true) {
 			updateStart = System.currentTimeMillis();
 
 			// Odometer code adapted from lab2 odometer.java and previous years' lab code
-			currentTachoL = leftMotor.getTachoCount();
-			currentTachoR = rightMotor.getTachoCount();
+			leftMotorTachoCount = leftMotor.getTachoCount();
+			rightMotorTachoCount = rightMotor.getTachoCount();
 
-			distL = 2 * PI * WR * (currentTachoL - lastTachoL) / 360;
-			distR = 2 * PI * WR * (currentTachoR - lastTachoR) / 360;
+			// Calculate distance traveled for each wheel in metric units
+			leftDistance = PI * WR * (leftMotorTachoCount - lastLeftMotorTachoCount) / 180;
+			rightDistance = PI * WR * (rightMotorTachoCount - lastRightMotorTachoCount) / 180;
 
-			lastTachoL = currentTachoL; // Save tacho counts for next iteration
-			lastTachoR = currentTachoR;
+			// Save current tacho count to check with next cycle
+			lastLeftMotorTachoCount = leftMotorTachoCount;
+			lastRightMotorTachoCount = rightMotorTachoCount;
 
-			dDistance = 0.5 * (distL + distR);	// Compute vehicle displacement
-			dTheta = (distL - distR) / WD; 		// Compute change in heading
-			dX = dDistance * Math.sin(theta); 	// Compute X component of displacement
-			dY = dDistance * Math.cos(theta); 	// Compute Y component of displacement
+			// Compute distances in x and y axis
+			deltaDistance = 0.5 * (leftDistance + rightDistance);
+			deltaTheta = (leftDistance - rightDistance) / WD;
+			deltaX = deltaDistance * Math.sin(theta);
+			deltaY = deltaDistance * Math.cos(theta);
 			synchronized (lock) {
-				
+
 				/**
 				 * Don't use the variables x, y, or theta anywhere but here! Only update the
 				 * values of x, y, and theta in this block. Do not perform complex math
 				 * 
 				 */
 
-				theta += dTheta; 	// Update direction
-				x = x + dX; 		// Update estimates of X and Y position
-				y = y + dY;
+				theta += deltaTheta; // Update direction
+				x = x + deltaX; // Update estimates of X and Y position
+				y = y + deltaY;
 			}
 
 			// This ensures that the odometer only runs once every period
@@ -87,6 +123,14 @@ public class Odometer extends Thread {
 	}
 
 	// Getters
+
+	/**
+	 * This method returns the x,y and theta coordinates of the robot
+	 * 
+	 * @param position
+	 *            array, and update boolean
+	 * @return x, y, theta
+	 */
 	public void getPosition(double[] position, boolean[] update) {
 		// Ensure that the values don't change while the odometer is running
 		synchronized (lock) {
@@ -99,34 +143,49 @@ public class Odometer extends Thread {
 		}
 	}
 
+	/**
+	 * This method retrieve the X value
+	 * 
+	 * @return value
+	 */
 	public double getX() {
-		double result;
+		double value;
 
 		synchronized (lock) {
-			result = x;
+			value = x;
 		}
 
-		return result;
+		return value;
 	}
 
+	/**
+	 * This method retrieve the Y value
+	 * 
+	 * @return value
+	 */
 	public double getY() {
-		double result;
+		double value;
 
 		synchronized (lock) {
-			result = y;
+			value = y;
 		}
 
-		return result;
+		return value;
 	}
 
+	/**
+	 * This method retrieve the theta value
+	 * 
+	 * @return value
+	 */
 	public double getTheta() {
-		double result;
+		double value;
 
 		synchronized (lock) {
-			result = theta;
+			value = theta;
 		}
 
-		return result;
+		return value;
 	}
 
 	/**
@@ -144,6 +203,13 @@ public class Odometer extends Thread {
 	}
 
 	// Setters
+
+	/**
+	 * This method updates the x, y, and theta positions
+	 * 
+	 * @param position
+	 * @param update
+	 */
 	public void setPosition(double[] position, boolean[] update) {
 		// ensure that the values don't change while the odometer is running
 		synchronized (lock) {
@@ -156,18 +222,27 @@ public class Odometer extends Thread {
 		}
 	}
 
+	/**
+	 * @param x
+	 */
 	public void setX(double x) {
 		synchronized (lock) {
 			this.x = x;
 		}
 	}
 
+	/**
+	 * @param y
+	 */
 	public void setY(double y) {
 		synchronized (lock) {
 			this.y = y;
 		}
 	}
 
+	/**
+	 * @param theta
+	 */
 	public void setTheta(double theta) {
 		synchronized (lock) {
 			this.theta = theta;
