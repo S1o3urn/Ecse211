@@ -83,9 +83,6 @@ public class BangBangController implements UltrasonicController {
 			WallFollowingLab.rightMotor.backward();
 		}
 
-		// Robot is at offset and within the appropriate bandwidth
-		// Robot will go straight
-
 		// Robot is on the inside of the offset and over the bandwidth
 		// Robot will steer right
 		else if (distance < (bandCenter - bandwidth)) {

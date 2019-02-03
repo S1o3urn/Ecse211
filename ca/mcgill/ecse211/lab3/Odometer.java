@@ -1,6 +1,6 @@
 package ca.mcgill.ecse211.lab3;
 
-/*
+/**
  * This class implements the odometer functionality.
  * Given the wheel radius, the speed at which is travels and the tachometer count, 
  * it is then possible to calculate the distance traveled
@@ -8,6 +8,8 @@ package ca.mcgill.ecse211.lab3;
  *  
  * We chose to model this class after previous year odometer classes 
  * since it utilises 1 class rather than both an odometer and an odometerData class
+ * 
+ * @author Tian Han Jiang
  */
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;

@@ -1,5 +1,10 @@
 package ca.mcgill.ecse211.lab3;
 
+/**
+ * This class implements the logic behind displaying the robots current positioning
+ * @author Tian han Jiang
+ * inspired from lab2
+ */
 import java.text.DecimalFormat;
 
 /**

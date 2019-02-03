@@ -1,114 +1,133 @@
 package ca.mcgill.ecse211.lab3;
 
-/* 
+/**
  * This method implements the normal navigation through waypoints 
+ * @author Tian Han Jiang
  */
-import lejos.hardware.Sound;
+
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class Navigation extends Thread {
-	
+
 	private Odometer odometer;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	
-	public Navigation(Odometer odometer, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor){
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
+
+	// constants
+	private static final int FORWARD_SPEED = EV3Navigation.FORWARD_SPEED;
+	private static final int ROTATE_SPEED = EV3Navigation.ROTATE_SPEED;
+	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
+	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
+	private static final double PI = Math.PI;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param odometer
+	 * @param leftMotor
+	 * @param rightMotor
+	 */
+	public Navigation(Odometer odometer, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
 		this.odometer = odometer;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 	}
-	
-	//constants
-	private static final int FORWARD_SPEED = 250;
-	private static final int ROTATE_SPEED = 150;
-	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
-	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
-	private static final double PI = Math.PI;
-	
-	
+
 	private static boolean onTheMove = false;
 
 	@Override
 	public void run() {
-		travelTo(60,30);
-		travelTo(30,30);
-		travelTo(30,60);
-		travelTo(60,0);
-	}
-	
-	
-	/* parameters: double x and y that represent the waypoint coordinates
-	 * action: travels to waypoint
-	 */
-	
-	public void travelTo(double x, double y) {
-		
-		//reset motors
-			leftMotor.stop();
-			rightMotor.stop();
-			leftMotor.setAcceleration(3000);
-			rightMotor.setAcceleration(3000);
-		
-		onTheMove = true;
-		
-		//calculate trajectory path and angle
-		double trajectoryX = x - odometer.getX();
-		double trajectoryY = y - odometer.getY();
-		double trajectoryAngle = Math.atan2(trajectoryX, trajectoryY);
-		
-		//rotate to correct angle
-		Sound.beepSequenceUp();
-		leftMotor.setSpeed(ROTATE_SPEED);
-		rightMotor.setSpeed(ROTATE_SPEED);
-		turnTo(trajectoryAngle);
-		
-		double trajectoryLine = Math.hypot(trajectoryX, trajectoryY);
-		
-		//move forward correct distance
-		Sound.beepSequence();
-		leftMotor.setSpeed(FORWARD_SPEED);
-		rightMotor.setSpeed(FORWARD_SPEED);
-		leftMotor.rotate(convertDistanceForMotor(trajectoryLine),true);
-		rightMotor.rotate(convertDistanceForMotor(trajectoryLine),false);
-	}
-	
-	
-	/* parameters: double theta that represents an angle in radians
-	 * action: changes heading from current angle to theta
-	 */
-	
-	public void turnTo(double theta) {
-		
-		double angle = theta-odometer.getTheta();
-		
-		leftMotor.rotate(convertAngleForMotor(angle),true);
-		rightMotor.rotate(-convertAngleForMotor(angle),false);
-	}
-	
-	
-	/* returns: whether or not the vehicle is currently navigating
-	 */
-	
-	public boolean isNavigating() {
-		return onTheMove;
-	}
-	
-	
-	/* parameter: double distance representing the length of the line the vehicle has to run
-	 * returns: amount of degrees the motors have to turn to traverse this distance
-	 */
-	
-	private int convertDistanceForMotor(double distance){
-		return (int) (360*distance/(2*PI*WHEEL_RADIUS));
-	}
-	
-	
-	/* parameter: double angle representing the angle heading change in radians
-	 * returns: amount of degrees the motors have to turn to change this heading
-	 */
-	
-	private int convertAngleForMotor(double angle){
-		return convertDistanceForMotor(WHEEL_BASE*angle/2);
+
+		// Input travel points here
+		travelTo(60, 30);
+		travelTo(30, 30);
+		travelTo(30, 60);
+		travelTo(60, 0);
 	}
 
+	/**
+	 * This method calculates the distances in x and y axis that the robot needs to
+	 * travel through trigonometry and then finds the hypotenuse in order to travel
+	 * in a straight line
+	 * 
+	 * @param x
+	 * @param y
+	 */
+	public void travelTo(double x, double y) {
+
+		// Path calculation variables
+		double xPath;
+		double yPath;
+		double path;
+		double angle;
+
+		// Reset motor speeds
+		leftMotor.stop();
+		rightMotor.stop();
+		leftMotor.setAcceleration(3000);
+		rightMotor.setAcceleration(3000);
+
+		onTheMove = true;
+
+		// Calculate path and angle
+		xPath = x - odometer.getX();
+		yPath = y - odometer.getY();
+		path = Math.hypot(xPath, yPath);
+		angle = Math.atan2(xPath, yPath);
+
+		// Turn to face the waypoint
+		leftMotor.setSpeed(ROTATE_SPEED);
+		rightMotor.setSpeed(ROTATE_SPEED);
+		turnTo(angle);
+
+		// Advance forward equal to path distance
+		leftMotor.setSpeed(FORWARD_SPEED);
+		rightMotor.setSpeed(FORWARD_SPEED);
+		leftMotor.rotate(distanceToRotations(path), true);
+		rightMotor.rotate(distanceToRotations(path), false);
+	}
+
+/**
+ * This method implements the logic behind turning to face a waypoint
+ * 
+ * @param theta
+ */
+	public void turnTo(double theta) {
+
+		double angle = theta - odometer.getTheta();
+
+		leftMotor.rotate(radianToDegree(angle), true);
+		rightMotor.rotate(-radianToDegree(angle), false);
+	}
+
+
+	/**
+	 * This method takes in the total distance needed to travel and transforms it
+	 * into the number of wheel rotations needed
+	 * 
+	 * @param distance
+	 * @return
+	 */
+	public int distanceToRotations(double distance) {
+		return (int) (180 * distance / (PI * WHEEL_RADIUS));
+	}
+
+	/**
+	 * This method converts radians into degrees
+	 * @param angle
+	 * @return wheel rotations needed
+	 */
+	public int radianToDegree(double angle) {
+		return distanceToRotations(WHEEL_BASE * angle / 2);
+	}
+	
+	/**
+	 * Checks to see if the robot is on the move or not
+	 * 
+	 * @return true/false
+	 */
+	public boolean Moving() {
+		return onTheMove;
+	}
 
 }

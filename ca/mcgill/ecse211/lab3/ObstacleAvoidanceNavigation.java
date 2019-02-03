@@ -4,175 +4,245 @@ import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
 
-
 public class ObstacleAvoidanceNavigation extends Thread {
-	
-	private Odometer odometer;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor, sensorMotor;
-	int bandCenter = 11;
-	int bandWidth = 3;
-	int distance;
-	private SampleProvider us;
-	private float[] usData;
 
-	
-	
-	public ObstacleAvoidanceNavigation(Odometer odometer, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-			EV3LargeRegulatedMotor sensorMotor, SampleProvider us, float[] usData){
-		this.odometer = odometer;
-		this.leftMotor = leftMotor;
-		this.rightMotor = rightMotor;
-		this.sensorMotor = sensorMotor;
-		this.us = us;
-		this.usData = usData;
-	}
-	
-	//constants
+	// Motors and sensors
+	private Odometer odometer;
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
+	private EV3LargeRegulatedMotor sensorMotor;
+	private SampleProvider ultrasonicSensor;
+	private float[] ultrasonicData;
+
+	// Constants
+	private static final int FORWARD_SPEED = EV3Navigation.FORWARD_SPEED;
+	private static final int ROTATE_SPEED = EV3Navigation.ROTATE_SPEED;
+	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
+	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
+
 	private static final int SCAN_SPEED = 175;
 	private static final int RIGHT_ANGLE = 55;
 	private static final int LEFT_ANGLE = -55;
-	private static final int CRITICAL_ANGLE = 10;
-	private static final int FORWARD_SPEED = 250;
-	private static final int ROTATE_SPEED = 150;
+	private static final int MAX_TACHO_COUNT = 10;
 	private static final int OBSTACLE_SENSOR_ANGLE = 80;
 	private static final int OBSTACLE_FWD_SPEED = 150;
 	private static final int OBSTACLE_TURN_IN_SPEED = 275;
 	private static final int OBSTACLE_TURN_OUT_SPEED = 60;
-	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
-	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
 	private static final double PI = Math.PI;
+	private static final int FILTER_OUT = 20;
+	private int filterControl = 0;
 
-	private static boolean navigating = true;
+	int sensorDistance;
+	int bandCenter = 15;
+	int bandWidth = 2;
+
+	private static boolean onTheMove = true;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param odometer
+	 * @param leftMotor
+	 * @param rightMotor
+	 * @param sensorMotor
+	 * @param ultrasonicSensor
+	 * @param utrasonicData
+	 */
+	public ObstacleAvoidanceNavigation(Odometer odometer, EV3LargeRegulatedMotor leftMotor,
+			EV3LargeRegulatedMotor rightMotor, EV3LargeRegulatedMotor sensorMotor, SampleProvider ultrasonicSensor,
+			float[] utrasonicData) {
+		this.odometer = odometer;
+		this.leftMotor = leftMotor;
+		this.rightMotor = rightMotor;
+		this.sensorMotor = sensorMotor;
+		this.ultrasonicSensor = ultrasonicSensor;
+		this.ultrasonicData = utrasonicData;
+	}
 
 	@Override
 	public void run() {
-		travelTo(0,60);
-		travelTo(60,0);
+
+		// Input travel points here
+		travelTo(0, 60);
+		travelTo(60, 0);
 	}
-	
+
+	/**
+	 * This method is operates the same way as that of Navigation.java However, it
+	 * also implements the avoiding obstacle feature
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public void travelTo(double x, double y) {
-		
-		//reset motors
-		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {leftMotor, rightMotor}) {
-			motor.stop();
-			motor.setAcceleration(3000);
-		}
-		
-		//get distance and angle, and then move
-		double trajectoryX = x - odometer.getX();
-		double trajectoryY = y - odometer.getY();
-		double trajectoryAngle = Math.atan2(trajectoryX, trajectoryY);
-		
-		Sound.beepSequenceUp();
+
+		// Path calculation variables
+		double xPath;
+		double yPath;
+		double path;
+		double angle;
+
+		// Reset motors
+		leftMotor.stop();
+		rightMotor.stop();
+		leftMotor.setAcceleration(3000);
+		rightMotor.setAcceleration(3000);
+
+		// Calculate path and angle
+		xPath = x - odometer.getX();
+		yPath = y - odometer.getY();
+		path = Math.hypot(xPath, yPath);
+		angle = Math.atan2(xPath, yPath);
+
+		// Turn to face the waypoint
 		leftMotor.setSpeed(ROTATE_SPEED);
 		rightMotor.setSpeed(ROTATE_SPEED);
-		turnTo(trajectoryAngle);
-		
-		double trajectoryLine = Math.hypot(trajectoryX, trajectoryY);
-		
-		Sound.beepSequence();
+		turnTo(angle);
+
+		// Advance forward equal to path distance
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
-		leftMotor.rotate(convertDistanceForMotor(trajectoryLine),true);
-		rightMotor.rotate(convertDistanceForMotor(trajectoryLine),true);
-		
-		int distance;
+		leftMotor.rotate(distanceToRotations(path), true);
+		rightMotor.rotate(distanceToRotations(path), true);
+
+		// Sensor motor setup
 		sensorMotor.resetTachoCount();
 		sensorMotor.setSpeed(SCAN_SPEED);
-		
-		
-		while (leftMotor.isMoving() || rightMotor.isMoving()) { // Scan the surrounding when the robot is moving
-			while (!sensorMotor.isMoving()){ //Rotate the sensor if it's not already rotating
-			if (sensorMotor.getTachoCount()>=CRITICAL_ANGLE){
-				sensorMotor.rotateTo(LEFT_ANGLE,true);
-			} else {
-				sensorMotor.rotateTo(RIGHT_ANGLE,true);
+
+		// Obstacle avoidance sensor
+		while (leftMotor.isMoving() || rightMotor.isMoving()) {
+			// Sensor not rotating, determine which way to rotate
+			while (!(sensorMotor.isMoving())) {
+				if (sensorMotor.getTachoCount() <= MAX_TACHO_COUNT) {
+					sensorMotor.rotateTo(RIGHT_ANGLE, true);
+				} else {
+					sensorMotor.rotateTo(LEFT_ANGLE, true);
+				}
 			}
-			}
-			us.fetchSample(usData,0);							// acquire data
-			distance=(int)(usData[0]*100.0);					// extract from buffer, cast to int
-			filter(distance);
+
+			// Fetch sensor data and filter
+			ultrasonicSensor.fetchSample(ultrasonicData, 0);
+			sensorDistance = (int) (ultrasonicData[0] * 100.0);
+			filter(sensorDistance);
 			
-			if(distance <= bandCenter){
-				Sound.beep();
-				leftMotor.stop(true); // Stop the robot and quit navigation mode
+			//Turn left until sensor distance is within bandCenter
+			if (sensorDistance <= bandCenter) {
+				leftMotor.stop(true);
 				rightMotor.stop(false);
-				navigating = false;
+				onTheMove = false;
 			}
-			try { Thread.sleep(50); } catch(Exception e){}		// Poor man's timed sampling
+			try {
+				Thread.sleep(50);
+			} catch (Exception e) {
+			} // Poor man's timed sampling
 		}
 		
-		if (!this.isNavigating()){
-			avoidObstacle(); // Implements bangbang controller to avoid the obstacle
-			sensorMotor.rotateTo(0); // reset sensor position
-			navigating = true; // re-enable navigation mode
-			travelTo(x,y); // continue traveling to destination
+		// Obstacle avoidance
+		if (!this.Moving()) {
+			avoidObstacle();
+			sensorMotor.rotateTo(0);
+			onTheMove = true;
+			travelTo(x, y);
 			return;
 		}
+		
+		//When vehicle reach a waypoint, reset sensor to rest position
 		sensorMotor.rotateTo(0);
-		
+
 	}
-	
-	public void turnTo(double theta) { //method from navigation program
-		
-		double angle = getMinAngle(theta-odometer.getTheta());
-		
-		leftMotor.rotate(convertAngleForMotor(angle),true);
-		rightMotor.rotate(-convertAngleForMotor(angle),false);
+
+	/**
+	 * This method implements the logic behind turning to face a waypoint
+	 * 
+	 * @param theta
+	 */
+	public void turnTo(double theta) {
+
+		double angle = getMinAngle(theta - odometer.getTheta());
+
+		leftMotor.rotate(radianToDegree(angle), true);
+		rightMotor.rotate(-radianToDegree(angle), false);
 	}
-	
-	public double getMinAngle(double angle){
+
+	/**
+	 * This method calculates the minimum angle required to face the waypoint
+	 * 
+	 * @param angle
+	 */
+	public double getMinAngle(double angle) {
 		if (angle > PI) {
-			angle = 2*PI - angle;
+			angle = 2 * PI - angle;
 		} else if (angle < -PI) {
-			angle = angle + 2*PI;
+			angle = angle + 2 * PI;
 		}
 		return angle;
 	}
-	
-	/* returns: whether or not the vehicle is currently navigating
+
+	/**
+	 * Checks to see if the robot is on the move or not
+	 * 
+	 * @return true/false
 	 */
-	public boolean isNavigating() {
-		return navigating;
+	public boolean Moving() {
+		return onTheMove;
 	}
-	/* parameter: double distance representing the length of the line the vehicle has to run
-	 * returns: amount of degrees the motors have to turn to traverse this distance
+
+	/**
+	 * This method takes in the total distance needed to travel and transforms it
+	 * into the number of wheel rotations needed
+	 * 
+	 * @param distance
+	 * @return
 	 */
-	private int convertDistanceForMotor(double distance){
-		return (int) (360*distance/(2*PI*WHEEL_RADIUS));
+	public int distanceToRotations(double distance) {
+		return (int) (180 * distance / (PI * WHEEL_RADIUS));
 	}
-	/* parameter: double angle representing the angle heading change in radians
-	 * returns: amount of degrees the motors have to turn to change this heading
+
+	/**
+	 * This method converts radians into degrees
+	 * 
+	 * @param angle
+	 * @return wheel rotations needed
 	 */
-	private int convertAngleForMotor(double angle){
-		return convertDistanceForMotor(WHEEL_BASE*angle/2);
+	public int radianToDegree(double angle) {
+		return distanceToRotations(WHEEL_BASE * angle / 2);
 	}
-	
-	public void avoidObstacle(){
-		turnTo(odometer.getTheta()-PI/2);
+
+	/**
+	 * This method implements a Bang-Bang type logic to avoid an obstacle
+	 */
+	public void avoidObstacle() {
+		turnTo(odometer.getTheta() - PI / 2);
 		// adjust the robot heading to ensure the avoidance of obstacles
 		sensorMotor.rotateTo(OBSTACLE_SENSOR_ANGLE);
-		
+
 		// define the exit condition of avoidance mode
-		double endAngle = odometer.getTheta()+PI*0.8;
-		
+		double endAngle = odometer.getTheta() + PI * 0.8;
+
 		// engage bangbang controller to avoid the obstacle
-		while (odometer.getTheta()<endAngle){
-			us.fetchSample(usData,0);							// acquire data
-			distance=(int)(usData[0]*100.0);					// extract from buffer, cast to int
-			int errorDistance = bandCenter - distance;
-			
-			if (Math.abs(errorDistance)<= bandWidth){ //moving in straight line
+		while (odometer.getTheta() < endAngle) {
+			ultrasonicSensor.fetchSample(ultrasonicData, 0); // acquire data
+			sensorDistance = (int) (ultrasonicData[0] * 100.0); // extract from buffer, cast to int
+			int errorDistance = bandCenter - sensorDistance;
+
+			//Drive straight
+			if (Math.abs(errorDistance) <= bandWidth) {
 				leftMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				leftMotor.forward();
 				rightMotor.forward();
-			} else if (errorDistance > 0){ //too close to wall
+			} 
+			
+			//
+			else if (errorDistance > 0) { // too close to wall
 				leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);// Setting the outer wheel to reverse
-				rightMotor.setSpeed(OBSTACLE_FWD_SPEED); 
+				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				leftMotor.backward();
 				rightMotor.forward();
-			} else if (errorDistance < 0){ // getting too far from the wall
+			} 
+			
+			// 
+			else if (errorDistance < 0) { // getting too far from the wall
 				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);// Setting the outer wheel to move faster
 				rightMotor.forward();
@@ -182,35 +252,33 @@ public class ObstacleAvoidanceNavigation extends Thread {
 		Sound.beep();
 		leftMotor.stop();
 		rightMotor.stop();
-		
+
 	}
-	
+
 	public int readUSDistance() {
-		return this.distance;
+		return this.sensorDistance;
 	}
-	
+
 	// Filtering out bad results
-	public void filter(int distance){
-		//int errorDistance = bandCenter - this.distance;
-		
-		int FILTER_OUT = 25;
-		int filterControl = 0;
-		
-		// rudimentary filter - copied from TA code on myCourses
-			if (distance >= 255 && filterControl < FILTER_OUT) {
-				// bad value, do not set the distance var, however do increment the
-				// filter value
-				filterControl++;
-			} else if (distance >= 255) {
-				// We have repeated large values, so there must actually be nothing
-				// there: leave the distance alone
-				this.distance = distance;
-			} else {
-				// distance went below 255: reset filter and leave
-				// distance alone.
-				filterControl = 0;
-				this.distance = distance;
-			}
+	public void filter(int distance) {
+
+		// Basic filter adapted from lab1
+		// There is an abnormally large value
+		if (distance >= 75 && filterControl < FILTER_OUT) {
+			filterControl++;
+		}
+
+		// FILTER_OUT amount of repeated large value
+		// meaning there could be nothing there to scan
+		else if (distance >= 75) {
+			this.sensorDistance = distance;
+		}
+
+		// Filtered values
+		else {
+			filterControl = 0;
+			this.sensorDistance = distance;
+		}
 	}
 
 }

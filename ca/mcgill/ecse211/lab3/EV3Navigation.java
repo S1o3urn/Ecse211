@@ -1,5 +1,13 @@
 package ca.mcgill.ecse211.lab3;
 
+/**
+ * This class displays user settings to switch between use modes
+ * 
+ * motors, sensors and changeable constants are all declared and initialized here for interface simplicity
+ * @author Tian Han Jiang
+ * Inspired from lab2 and previous years code
+ */
+
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.Button;
@@ -21,6 +29,8 @@ public class EV3Navigation {
 	// Wheel constants
 	public static final double WHEEL_RADIUS = 2.3;
 	public static final double WHEEL_BASE = 13.25;
+	public static final int FORWARD_SPEED = 250;
+	public static final int ROTATE_SPEED = 150;
 
 	public static void main(String[] args) {
 
@@ -35,7 +45,7 @@ public class EV3Navigation {
 
 		// Display
 		int buttonPressed;
-		
+
 		final TextLCD text = LocalEV3.get().getTextLCD();
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
 		Display odometryDisplay = new Display(odometer, text);
