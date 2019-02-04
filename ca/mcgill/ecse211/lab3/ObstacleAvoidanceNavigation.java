@@ -1,6 +1,5 @@
 package ca.mcgill.ecse211.lab3;
 
-import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
 
@@ -19,15 +18,16 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	private static final int ROTATE_SPEED = EV3Navigation.ROTATE_SPEED;
 	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
 	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
+	private static final double TILE_MEASURE = EV3Navigation.TILE_MEASURE;
 
 	private static final int SCAN_SPEED = 175;
 	private static final int RIGHT_ANGLE = 55;
 	private static final int LEFT_ANGLE = -55;
 	private static final int MAX_TACHO_COUNT = 10;
-	private static final int OBSTACLE_SENSOR_ANGLE = 45;
-	private static final int OBSTACLE_FWD_SPEED = 150;
-	private static final int OBSTACLE_TURN_IN_SPEED = 275;
-	private static final int OBSTACLE_TURN_OUT_SPEED = 60;
+	private static final int OBSTACLE_SENSOR_ANGLE = -45;
+	private static final int OBSTACLE_FWD_SPEED = 125;
+	private static final int OBSTACLE_TURN_IN_SPEED = 225;
+	private static final int OBSTACLE_TURN_OUT_SPEED = 25;
 	private static final double PI = Math.PI;
 	private static final int FILTER_OUT = 20;
 	private int filterControl = 0;
@@ -36,7 +36,7 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	int bandCenter = 15;
 	int bandWidth = 2;
 
-	private static boolean onTheMove = true;
+	private static boolean navigating = true;
 
 	/**
 	 * Constructor
@@ -63,8 +63,8 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	public void run() {
 
 		// Input travel points here
-		travelTo(0, 60);
-		travelTo(60, 0);
+		travelTo((0 * TILE_MEASURE), (2 * TILE_MEASURE));
+		travelTo((2 * TILE_MEASURE), (0 * TILE_MEASURE));
 	}
 
 	/**
@@ -124,29 +124,29 @@ public class ObstacleAvoidanceNavigation extends Thread {
 			ultrasonicSensor.fetchSample(ultrasonicData, 0);
 			sensorDistance = (int) (ultrasonicData[0] * 100.0);
 			filter(sensorDistance);
-			
-			//Turn left until sensor distance is within bandCenter
+
+			// Turn left until sensor distance is within bandCenter
 			if (sensorDistance <= bandCenter) {
 				leftMotor.stop(true);
 				rightMotor.stop(false);
-				onTheMove = false;
+				navigating = false;
 			}
 			try {
 				Thread.sleep(50);
 			} catch (Exception e) {
 			} // Poor man's timed sampling
 		}
-		
+
 		// Obstacle avoidance
-		if (!this.Moving()) {
+		if (!this.isNavigating()) {
 			avoidObstacle();
 			sensorMotor.rotateTo(0);
-			onTheMove = true;
+			navigating = true;
 			travelTo(x, y);
 			return;
 		}
-		
-		//When vehicle reach a waypoint, reset sensor to rest position
+
+		// When vehicle reach a waypoint, reset sensor to rest position
 		sensorMotor.rotateTo(0);
 
 	}
@@ -183,8 +183,8 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	 * 
 	 * @return true/false
 	 */
-	public boolean Moving() {
-		return onTheMove;
+	public boolean isNavigating() {
+		return navigating;
 	}
 
 	/**
@@ -212,10 +212,12 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	 * This method implements a Bang-Bang type logic to avoid an obstacle
 	 */
 	public void avoidObstacle() {
-		turnTo(odometer.getTheta() - PI / 2);
-		
-		// Adjust sensor motor to peak angle for obstacle detection
-		sensorMotor.rotateTo(OBSTACLE_SENSOR_ANGLE);
+
+			// Turn 90degrees right
+			turnTo(odometer.getTheta() - PI / 2);
+
+			// Adjust sensor motor to peak angle for obstacle detection
+			sensorMotor.rotateTo(OBSTACLE_SENSOR_ANGLE);
 
 		// Define when to stop obstacle avoidance
 		double endAngle = odometer.getTheta() + PI * 0.8;
@@ -232,27 +234,27 @@ public class ObstacleAvoidanceNavigation extends Thread {
 				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
 				leftMotor.forward();
 				rightMotor.forward();
-			} 
-			
+			}
+
 			// Robot is on the inside of the offset and over the bandwidth
 			else if (errorDistance > 0) {
-				// Turn left
-				leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);
-				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
-				leftMotor.backward();
-				rightMotor.forward();
-			} 
-			
+
+					rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
+					leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);
+					rightMotor.forward();
+					leftMotor.backward();
+			}
+
 			// Robot is on the outside of the offset and over the bandwidth
 			else if (errorDistance < 0) {
-				// Turn right
-				leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);
-				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
-				leftMotor.forward();
-				rightMotor.forward();
+				
+					rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
+					leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);
+					rightMotor.forward();
+					leftMotor.forward();
 			}
 		}
-		
+
 		// Finished cornering the obstacle
 		leftMotor.stop();
 		rightMotor.stop();
@@ -261,6 +263,7 @@ public class ObstacleAvoidanceNavigation extends Thread {
 
 	/**
 	 * This method fetches the distance measured by the ultrasonic sensor
+	 * 
 	 * @return sensorDistance
 	 */
 	public int readUSDistance() {
