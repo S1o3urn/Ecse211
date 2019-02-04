@@ -19,6 +19,9 @@ public class Navigation extends Thread {
 	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
 	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
 	private static final double PI = Math.PI;
+	private static final double TILE_MEASURE = EV3Navigation.TILE_MEASURE;
+	
+	private static boolean navigating = false;
 
 	/**
 	 * Constructor
@@ -33,16 +36,14 @@ public class Navigation extends Thread {
 		this.rightMotor = rightMotor;
 	}
 
-	private static boolean onTheMove = false;
-
 	@Override
 	public void run() {
 
 		// Input travel points here
-		travelTo(60, 30);
-		travelTo(30, 30);
-		travelTo(30, 60);
-		travelTo(60, 0);
+		travelTo((2 * TILE_MEASURE), (1 * TILE_MEASURE));
+		travelTo((1 * TILE_MEASURE), (1 * TILE_MEASURE));
+		travelTo((1 * TILE_MEASURE), (2 * TILE_MEASURE));
+		travelTo((2 * TILE_MEASURE), (0 * TILE_MEASURE));
 	}
 
 	/**
@@ -67,7 +68,7 @@ public class Navigation extends Thread {
 		leftMotor.setAcceleration(3000);
 		rightMotor.setAcceleration(3000);
 
-		onTheMove = true;
+		navigating = true;
 
 		// Calculate path and angle
 		xPath = x - odometer.getX();
@@ -126,8 +127,8 @@ public class Navigation extends Thread {
 	 * 
 	 * @return true/false
 	 */
-	public boolean Moving() {
-		return onTheMove;
+	public boolean isNavigating() {
+		return navigating;
 	}
 
 }

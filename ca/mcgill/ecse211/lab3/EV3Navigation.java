@@ -27,10 +27,12 @@ public class EV3Navigation {
 	private static final Port ultrasonicSensorPort = LocalEV3.get().getPort("S4");
 
 	// Wheel constants
-	public static final double WHEEL_RADIUS = 2.3;
-	public static final double WHEEL_BASE = 13.25;
+	public static final double WHEEL_RADIUS = 2.15;
+	public static final double WHEEL_BASE = 13.1;	//13.25 originally from lab2
 	public static final int FORWARD_SPEED = 250;
 	public static final int ROTATE_SPEED = 150;
+	
+	public static final double TILE_MEASURE = 30.00;
 
 	public static void main(String[] args) {
 
