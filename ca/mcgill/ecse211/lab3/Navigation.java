@@ -1,7 +1,8 @@
 package ca.mcgill.ecse211.lab3;
 
 /**
- * This method implements the normal navigation through waypoints 
+ * This class implements the normal navigation through waypoints.
+ * 
  * @author Tian Han Jiang
  */
 

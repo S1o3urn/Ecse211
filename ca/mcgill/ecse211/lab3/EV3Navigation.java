@@ -4,6 +4,7 @@ package ca.mcgill.ecse211.lab3;
  * This class displays user settings to switch between use modes
  * 
  * motors, sensors and changeable constants are all declared and initialized here for interface simplicity
+ * 
  * @author Tian Han Jiang
  * Inspired from lab2 and previous years code
  */

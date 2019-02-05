@@ -1,5 +1,12 @@
 package ca.mcgill.ecse211.lab3;
 
+/**
+ * This class is based on the Navigation.java class. 
+ * Furthermore, it implements an obstacle avoidance base on the Bang-Bang controller
+ * through the use of a rotating ultrasonic sensor.
+ * 
+ * @author Tian Han Jiang
+ */
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
 
