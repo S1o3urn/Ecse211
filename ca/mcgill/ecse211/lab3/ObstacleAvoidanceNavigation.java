@@ -20,12 +20,12 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
 	private static final double TILE_MEASURE = EV3Navigation.TILE_MEASURE;
 
-	private static final int SCAN_SPEED = 175;
+	private static final int SENSOR_SPEED = 175;
 	private static final int RIGHT_ANGLE = 55;
 	private static final int LEFT_ANGLE = -55;
 	private static final int MAX_TACHO_COUNT = 10;
 	private static final int OBSTACLE_SENSOR_ANGLE = -45;
-	private static final int OBSTACLE_FWD_SPEED = 125;
+	private static final int OBSTACLE_STRAIGHT_SPEED = 125;
 	private static final int OBSTACLE_TURN_IN_SPEED = 225;
 	private static final int OBSTACLE_TURN_OUT_SPEED = 25;
 	private static final double PI = Math.PI;
@@ -107,7 +107,7 @@ public class ObstacleAvoidanceNavigation extends Thread {
 
 		// Sensor motor setup
 		sensorMotor.resetTachoCount();
-		sensorMotor.setSpeed(SCAN_SPEED);
+		sensorMotor.setSpeed(SENSOR_SPEED);
 
 		// Obstacle avoidance sensor
 		while (leftMotor.isMoving() || rightMotor.isMoving()) {
@@ -230,8 +230,8 @@ public class ObstacleAvoidanceNavigation extends Thread {
 
 			// Drive straight
 			if (Math.abs(errorDistance) <= bandWidth) {
-				leftMotor.setSpeed(OBSTACLE_FWD_SPEED);
-				rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
+				leftMotor.setSpeed(OBSTACLE_STRAIGHT_SPEED);
+				rightMotor.setSpeed(OBSTACLE_STRAIGHT_SPEED);
 				leftMotor.forward();
 				rightMotor.forward();
 			}
@@ -239,7 +239,7 @@ public class ObstacleAvoidanceNavigation extends Thread {
 			// Robot is on the inside of the offset and over the bandwidth
 			else if (errorDistance > 0) {
 
-					rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
+					rightMotor.setSpeed(OBSTACLE_STRAIGHT_SPEED);
 					leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);
 					rightMotor.forward();
 					leftMotor.backward();
@@ -248,7 +248,7 @@ public class ObstacleAvoidanceNavigation extends Thread {
 			// Robot is on the outside of the offset and over the bandwidth
 			else if (errorDistance < 0) {
 				
-					rightMotor.setSpeed(OBSTACLE_FWD_SPEED);
+					rightMotor.setSpeed(OBSTACLE_STRAIGHT_SPEED);
 					leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);
 					rightMotor.forward();
 					leftMotor.forward();
