@@ -38,7 +38,12 @@ public class Odometer extends Thread {
 	// Lock object for mutual exclusion
 	private Object lock;
 
-	// Default constructor
+	/**
+	 * Constructor
+	 * 
+	 * @param leftMotor
+	 * @param rightMotor
+	 */
 	public Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
