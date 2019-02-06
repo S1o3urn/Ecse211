@@ -21,24 +21,56 @@ public class EV3Navigation {
 
 	// Initialize class variables
 	// Motors
-	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-	private static final EV3LargeRegulatedMotor sensorMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
-	private static final Port ultrasonicSensorPort = LocalEV3.get().getPort("S4");
+	/**
+	 * The left motor.
+	 */
+	private static final EV3LargeRegulatedMotor LEFT_MOTOR = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+	
+	/**
+	 * The right motor.
+	 */
+	private static final EV3LargeRegulatedMotor RIGHT_MOTOR = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	
+	/**
+	 * The sensor motor.
+	 */
+	private static final EV3LargeRegulatedMotor SENSOR_MOTOR = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
+	
+	/**
+	 * The port associated to the ultrasonic sensor port.
+	 */
+	private static final Port ULTRASONIC_SENSOR_PORT = LocalEV3.get().getPort("S4");
 
-	// Wheel constants
+	/**
+	 * The constant used to determine the wheel radius.
+	 */
 	public static final double WHEEL_RADIUS = 2.15;
+	
+	/**
+	 * The constant used to represent the wheel base.
+	 */
 	public static final double WHEEL_BASE = 13.1;	//13.25 originally from lab2
+	
+	/**
+	 * The forward speed.
+	 */
 	public static final int FORWARD_SPEED = 250;
+	
+	/**
+	 * The rotate speed, used when calling the turnTo method.
+	 */
 	public static final int ROTATE_SPEED = 150;
 	
+	/**
+	 * The tile length.
+	 */
 	public static final double TILE_MEASURE = 30.00;
 
 	public static void main(String[] args) {
 
 		// Sensor setup
 		@SuppressWarnings("resource") // Since ultrasonic sensor is always on
-		SensorModes ultrasonicSensor = new EV3UltrasonicSensor(ultrasonicSensorPort); // ultrasonicSensor is the
+		SensorModes ultrasonicSensor = new EV3UltrasonicSensor(ULTRASONIC_SENSOR_PORT); // ultrasonicSensor is the
 																						// instance
 		SampleProvider ultrasonicDistance = ultrasonicSensor.getMode("Distance"); // ultrasonicDistance provides samples
 																					// from this instance
@@ -49,11 +81,11 @@ public class EV3Navigation {
 		int buttonPressed;
 
 		final TextLCD text = LocalEV3.get().getTextLCD();
-		Odometer odometer = new Odometer(leftMotor, rightMotor);
+		Odometer odometer = new Odometer(LEFT_MOTOR, RIGHT_MOTOR);
 		Display odometryDisplay = new Display(odometer, text);
-		Navigation navigation = new Navigation(odometer, leftMotor, rightMotor);
-		ObstacleAvoidanceNavigation advancedNavigation = new ObstacleAvoidanceNavigation(odometer, leftMotor,
-				rightMotor, sensorMotor, ultrasonicDistance, ultrasonicData);
+		Navigation navigation = new Navigation(odometer, LEFT_MOTOR, RIGHT_MOTOR);
+		ObstacleAvoidanceNavigation advancedNavigation = new ObstacleAvoidanceNavigation(odometer, LEFT_MOTOR,
+				RIGHT_MOTOR, SENSOR_MOTOR, ultrasonicDistance, ultrasonicData);
 
 		do {
 			text.clear();

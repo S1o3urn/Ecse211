@@ -7,19 +7,17 @@ package ca.mcgill.ecse211.lab3;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+/**
+ * This imports existing motor instances.
+ */
+import static ca.mcgill.ecse211.lab3.EV3Navigation.*;
+
 public class Navigation extends Thread {
 
 	private Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
-
-	// constants
-	private static final int FORWARD_SPEED = EV3Navigation.FORWARD_SPEED;
-	private static final int ROTATE_SPEED = EV3Navigation.ROTATE_SPEED;
-	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
-	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
 	private static final double PI = Math.PI;
-	private static final double TILE_MEASURE = EV3Navigation.TILE_MEASURE;
 	
 	private static boolean navigating = false;
 
@@ -40,10 +38,11 @@ public class Navigation extends Thread {
 	public void run() {
 
 		// Input travel points here
-		travelTo((2 * TILE_MEASURE), (1 * TILE_MEASURE));
 		travelTo((1 * TILE_MEASURE), (1 * TILE_MEASURE));
-		travelTo((1 * TILE_MEASURE), (2 * TILE_MEASURE));
-		travelTo((2 * TILE_MEASURE), (0 * TILE_MEASURE));
+		travelTo((0 * TILE_MEASURE), (2 * TILE_MEASURE));
+		travelTo((2 * TILE_MEASURE), (2 * TILE_MEASURE));
+		travelTo((2 * TILE_MEASURE), (1 * TILE_MEASURE));
+		travelTo((1 * TILE_MEASURE), (0 * TILE_MEASURE));
 	}
 
 	/**
@@ -94,13 +93,22 @@ public class Navigation extends Thread {
  * @param theta
  */
 	public void turnTo(double theta) {
+		double angle = getMinAngle(theta - odometer.getTheta());
 
-		double angle = theta - odometer.getTheta();
+		//double angle = theta - odometer.getTheta();
 
 		leftMotor.rotate(radianToDegree(angle), true);
 		rightMotor.rotate(-radianToDegree(angle), false);
 	}
 
+	public double getMinAngle(double angle) {
+		if (angle > PI) {
+			angle = angle - 2 * PI;
+		} else if (angle < -PI) {
+			angle = 2 * PI + angle;
+		}
+		return angle;
+	}
 
 	/**
 	 * This method takes in the total distance needed to travel and transforms it

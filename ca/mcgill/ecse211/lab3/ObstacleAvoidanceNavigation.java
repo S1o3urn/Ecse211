@@ -1,7 +1,15 @@
 package ca.mcgill.ecse211.lab3;
 
+/**
+ * This class implements an obstacle avoidance navigation.
+ * While navigating towards a waypoint, if an obstacle is detected, a bang-bang style controller is activated.
+ * 
+ * @author Tian Han Jiang
+ */
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
+
+import static ca.mcgill.ecse211.lab3.EV3Navigation.*;
 
 public class ObstacleAvoidanceNavigation extends Thread {
 
@@ -13,27 +21,64 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	private SampleProvider ultrasonicSensor;
 	private float[] ultrasonicData;
 
-	// Constants
-	private static final int FORWARD_SPEED = EV3Navigation.FORWARD_SPEED;
-	private static final int ROTATE_SPEED = EV3Navigation.ROTATE_SPEED;
-	private static final double WHEEL_RADIUS = EV3Navigation.WHEEL_RADIUS;
-	private static final double WHEEL_BASE = EV3Navigation.WHEEL_BASE;
-	private static final double TILE_MEASURE = EV3Navigation.TILE_MEASURE;
-
+	
+	/**
+	 * The sensor motor turn speed.
+	 */
 	private static final int SCAN_SPEED = 175;
+	
+	/**
+	 * The max right angle for the sensor.
+	 */
 	private static final int RIGHT_ANGLE = 55;
+	
+	/**
+	 * The max left angle for the sensor.
+	 */
 	private static final int LEFT_ANGLE = -55;
+	
+	/**
+	 * The critical count for changing rotation direction of the sensor.
+	 */
 	private static final int MAX_TACHO_COUNT = 10;
+	
+	/**
+	 * The sensor angle while bang-bang style controller is engaged.
+	 */
 	private static final int OBSTACLE_SENSOR_ANGLE = -45;
-	private static final int OBSTACLE_FWD_SPEED = 125;
+	
+	/**
+	 * The forward speed while in obstacle avoidance mode.
+	 */
+	private static final int OBSTACLE_FWD_SPEED = 135;
+	
+	/**
+	 * The turning in speed while in obstacle avoidance mode.
+	 */
 	private static final int OBSTACLE_TURN_IN_SPEED = 225;
+	
+	/**
+	 * The obstacle turn out speed while in obstacle avoidance mode.
+	 */
 	private static final int OBSTACLE_TURN_OUT_SPEED = 25;
+	
+	/**
+	 * Pi value.
+	 */
 	private static final double PI = Math.PI;
+	
+	/** 
+	 * Sensor data filter critical value.
+	 */
 	private static final int FILTER_OUT = 20;
+	
+	/**
+	 * The filter control value.
+	 */
 	private int filterControl = 0;
 
 	int sensorDistance;
-	int bandCenter = 15;
+	int bandCenter = 14;
 	int bandWidth = 2;
 
 	private static boolean navigating = true;
@@ -63,8 +108,11 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	public void run() {
 
 		// Input travel points here
+		travelTo((1 * TILE_MEASURE), (1 * TILE_MEASURE));
 		travelTo((0 * TILE_MEASURE), (2 * TILE_MEASURE));
-		travelTo((2 * TILE_MEASURE), (0 * TILE_MEASURE));
+		travelTo((2 * TILE_MEASURE), (2 * TILE_MEASURE));
+		travelTo((2 * TILE_MEASURE), (1 * TILE_MEASURE));
+		travelTo((1 * TILE_MEASURE), (0 * TILE_MEASURE));
 	}
 
 	/**
@@ -171,9 +219,9 @@ public class ObstacleAvoidanceNavigation extends Thread {
 	 */
 	public double getMinAngle(double angle) {
 		if (angle > PI) {
-			angle = 2 * PI - angle;
+			angle = angle - 2 * PI;
 		} else if (angle < -PI) {
-			angle = angle + 2 * PI;
+			angle = 2 * PI + angle;
 		}
 		return angle;
 	}

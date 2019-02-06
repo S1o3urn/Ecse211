@@ -1,13 +1,6 @@
 package ca.mcgill.ecse211.lab3;
 
 /**
- * This class implements the logic behind displaying the robots current positioning
- * @author Tian han Jiang
- * inspired from lab2
- */
-import java.text.DecimalFormat;
-
-/**
  * This class implements the logic behind the display 
  * while the robot is running in either simple navigation 
  * or obstacle avoidance navigation
@@ -15,12 +8,24 @@ import java.text.DecimalFormat;
  * adapted from lab2 Display.java
  * and previous years Display.java
  */
+import java.text.DecimalFormat;
 import lejos.hardware.lcd.TextLCD;
 
 public class Display extends Thread {
 
+	/**
+	 * The odometer instance.
+	 */
 	private Odometer odometer;
+	
+	/**
+	 * The LCD display instance.
+	 */
 	private TextLCD LCD;
+	
+	/** 
+	 * The refresh rate for the display.
+	 */
 	private static final long DISPLAY_PERIOD = 25;
 
 	/**
