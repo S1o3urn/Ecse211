@@ -7,25 +7,25 @@ import lejos.utility.Timer;
 import lejos.utility.TimerListener;
 
 public class Display implements TimerListener {
+	private Odometer odometer;
+	private Timer screenTimer;
+	private TextLCD screen = LocalEV3.get().getTextLCD();
+	private SampleProvider ultrasonicSensor;
+	private float[] ultrasonicData;		// For Display
+	private double[] position;		// For Display
+	
 	public static final int LCD_REFRESH = 100;
-	private Odometer odo;
-	private Timer lcdTimer;
-	private TextLCD LCD = LocalEV3.get().getTextLCD();;
-	private SampleProvider usSensor;
-	private float[] usData;
-	// arrays for displaying data
-	private double[] pos;
 
 	public Display(Odometer odo, SampleProvider usSensor, float[] usData) {
-		this.odo = odo;
-		this.lcdTimer = new Timer(LCD_REFRESH, this);
+		this.odometer = odometer;
+		this.screenTimer = new Timer(LCD_REFRESH, this);
 
 		// initialise the arrays for displaying data
-		pos = new double[3];
-		this.usSensor = usSensor;
-		this.usData = usData;
+		position = new double[3];
+		this.ultrasonicSensor = usSensor;
+		this.ultrasonicData = usData;
 		// start the timer
-		lcdTimer.start();
+		screenTimer.start();
 	}
 
 	/*
@@ -34,24 +34,24 @@ public class Display implements TimerListener {
 	 * @see lejos.utility.TimerListener#timedOut() Prints the info on the LCD.
 	 */
 	public void timedOut() {
-		odo.getPosition(pos);
-		LCD.clear();
-		LCD.drawString("X: ", 0, 0);
-		LCD.drawString("Y: ", 0, 1);
-		LCD.drawString("H: ", 0, 2);
-		LCD.drawString("U: ", 0, 3);
-		LCD.drawString(String.valueOf(pos[0] * 10), 3, 0);
-		LCD.drawString(String.valueOf(pos[1] * 10), 3, 1);
-		LCD.drawString(String.valueOf(pos[2]), 3, 2);
-		LCD.drawString(String.valueOf(getFilteredData()), 3, 3);
+		odometer.getPosition(position);
+		screen.clear();
+		screen.drawString("X: ", 0, 0);
+		screen.drawString("Y: ", 0, 1);
+		screen.drawString("H: ", 0, 2);
+		screen.drawString("U: ", 0, 3);
+		screen.drawString(String.valueOf(position[0] * 10), 3, 0);
+		screen.drawString(String.valueOf(position[1] * 10), 3, 1);
+		screen.drawString(String.valueOf(position[2]), 3, 2);
+		screen.drawString(String.valueOf(getFilteredData()), 3, 3);
 	}
 
 	/*
 	 * Gets the data from the Ultrasonic sensor.
 	 */
 	private float getFilteredData() {
-		usSensor.fetchSample(usData, 0);
-		float distance = (int) (usData[0] * 100.0);
+		ultrasonicSensor.fetchSample(ultrasonicData, 0);
+		float distance = (int) (ultrasonicData[0] * 100.0);
 
 		return distance;
 	}
