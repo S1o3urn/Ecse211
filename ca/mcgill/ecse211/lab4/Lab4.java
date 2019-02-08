@@ -41,7 +41,7 @@ public class Lab4 {
 
 		// Setup color sensor
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
-		SampleProvider colorValue = colorSensor.getMode("Red");
+		SampleProvider colorValue = colorSensor.getMode("RGB");
 		float[] colorData = new float[colorValue.sampleSize()];
 
 		// Display
@@ -74,6 +74,7 @@ public class Lab4 {
 		}
 
 		// Wait until light localizer is needed
+		// Light sensor activated on any arrow key pressed
 		do {
 			text.clear();
 

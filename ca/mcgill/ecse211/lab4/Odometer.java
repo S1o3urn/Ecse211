@@ -4,107 +4,185 @@ import lejos.utility.Timer;
 import lejos.utility.TimerListener;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+import static ca.mcgill.ecse211.lab4.Lab4.*;
+
 public class Odometer implements TimerListener {
 
 	private Timer timer;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
+	private double width;
+	private double x;
+	private double y;
+	private double theta;
+	private double[] lastDisplacementAndHeading;
+	private double[] deltaDisplacementAndHeading;
 	private final int DEFAULT_TIMEOUT_PERIOD = 20;
-	private double leftRadius, rightRadius, width;
-	private double x, y, theta;
-	private double[] oldDH, dDH;
 
-	// constructor
+/**
+ * This constructor.
+ * @param leftMotor
+ * @param rightMotor
+ * @param INTERVAL
+ * @param autostart
+ */
 	public Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, int INTERVAL,
 			boolean autostart) {
 
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
-
-		// default values, modify for your robot
-		this.rightRadius = Lab4.WHEEL_RADIUS;
-		this.leftRadius = Lab4.WHEEL_RADIUS;
-		this.width = Lab4.TRACK;
-
 		this.x = 0.0;
 		this.y = 0.0;
 		this.theta = 0;
-		this.oldDH = new double[2];
-		this.dDH = new double[2];
+		this.lastDisplacementAndHeading = new double[2];
+		this.deltaDisplacementAndHeading = new double[2];
 
 		if (autostart) {
 			// if the timeout interval is given as <= 0, default to 20ms timeout
 			this.timer = new Timer((INTERVAL <= 0) ? INTERVAL : DEFAULT_TIMEOUT_PERIOD, this);
 			this.timer.start();
-		} else
+		} else {
 			this.timer = null;
+		}
 	}
 
-	// functions to start/stop the timerlistener
+	/**
+	 * This method stops the timer.
+	 */
 	public void stop() {
 		if (this.timer != null)
 			this.timer.stop();
 	}
 
+	/**
+	 * This method starts the timer.
+	 */
 	public void start() {
 		if (this.timer != null)
 			this.timer.start();
 	}
 
-	/*
-	 * Calculates displacement and heading as title suggests
+	/**
+	 * This method calculates the robots displacement and orientation.
+	 * @param data
 	 */
 	private void getDisplacementAndHeading(double[] data) {
-		int leftTacho, rightTacho;
+		int leftTacho;
+		int rightTacho;
 		leftTacho = leftMotor.getTachoCount();
 		rightTacho = rightMotor.getTachoCount();
 
-		data[0] = (leftTacho * leftRadius + rightTacho * rightRadius) * Math.PI / 360.0;
-		data[1] = (rightTacho * rightRadius - leftTacho * leftRadius) / width;
+		data[0] = (leftTacho + rightTacho) * WHEEL_RADIUS * Math.PI / 360.0;
+		data[1] = (rightTacho - leftTacho) * WHEEL_RADIUS / width;
 	}
 
-	/*
-	 * Recompute the odometer values using the displacement and heading changes
+	/**
+	 * This method corrects the displacement and orientation based on odmeter's values.
 	 */
 	public void timedOut() {
-		this.getDisplacementAndHeading(dDH);
-		dDH[0] -= oldDH[0];
-		dDH[1] -= oldDH[1];
+		this.getDisplacementAndHeading(deltaDisplacementAndHeading);
+		deltaDisplacementAndHeading[0] -= lastDisplacementAndHeading[0];
+		deltaDisplacementAndHeading[1] -= lastDisplacementAndHeading[1];
 
-		// update the position in a critical region
+		// Update to position
 		synchronized (this) {
-			theta += dDH[1];
-			theta = fixDegAngle(theta);
+			theta += deltaDisplacementAndHeading[1];
+			theta = correctAngle(theta);
 
-			x += dDH[0] * Math.cos(Math.toRadians(theta));
-			y += dDH[0] * Math.sin(Math.toRadians(theta));
+			x += deltaDisplacementAndHeading[0] * Math.cos(Math.toRadians(theta));
+			y += deltaDisplacementAndHeading[0] * Math.sin(Math.toRadians(theta));
 		}
 
-		oldDH[0] += dDH[0];
-		oldDH[1] += dDH[1];
+		lastDisplacementAndHeading[0] += deltaDisplacementAndHeading[0];
+		lastDisplacementAndHeading[1] += deltaDisplacementAndHeading[1];
 	}
 
-	// return X value
+	// Accessors
+	
+	/**
+	 * This method gets the x value of the robot's current position.
+	 * @return X
+	 */
 	public double getX() {
 		synchronized (this) {
 			return x;
 		}
 	}
 
-	// return Y value
+	/**
+	 * This method gets the y value of the robot's current position.
+	 * @return Y
+	 */
 	public double getY() {
 		synchronized (this) {
 			return y;
 		}
 	}
 
-	// return theta value
+	/**
+	 * This method gets the theta value of the robot's current position.
+	 * @return theta
+	 */
 	public double getAng() {
 		synchronized (this) {
 			return theta;
 		}
 	}
 
-	// set x,y,theta
+	/**
+	 * This method gets the robot's position.
+	 * @param position
+	 */
+	public void getPosition(double[] position) {
+		synchronized (this) {
+			position[0] = x;
+			position[1] = y;
+			position[2] = theta;
+		}
+	}
+
+	/**
+	 * This method gets the robot's position.
+	 * Overloaded method.
+	 * @return a new array with x, y and theta
+	 */
+	public double[] getPosition() {
+		synchronized (this) {
+			return new double[] { x, y, theta };
+		}
+	}
+
+	/**
+	 * This method returns an array of both motors.
+	 * @return a new array with both motors
+	 */
+	public EV3LargeRegulatedMotor[] getMotors() {
+		return new EV3LargeRegulatedMotor[] { this.leftMotor, this.rightMotor };
+	}
+
+	/**
+	 * This method returns the left motor.
+	 * @return leftMotor
+	 */
+	public EV3LargeRegulatedMotor getLeftMotor() {
+		return this.leftMotor;
+	}
+
+	/**
+	 * This method returns the right motor.
+	 * @return rightMotor
+	 */
+	public EV3LargeRegulatedMotor getRightMotor() {
+		return this.rightMotor;
+	}
+
+	// Mutators
+	
+	/**
+	 * This method changes the robot's perceived position.
+	 * @param position
+	 * @param update
+	 */
 	public void setPosition(double[] position, boolean[] update) {
 		synchronized (this) {
 			if (update[0])
@@ -116,44 +194,26 @@ public class Odometer implements TimerListener {
 		}
 	}
 
-	// return x,y,theta
-	public void getPosition(double[] position) {
-		synchronized (this) {
-			position[0] = x;
-			position[1] = y;
-			position[2] = theta;
-		}
-	}
-
-	public double[] getPosition() {
-		synchronized (this) {
-			return new double[] { x, y, theta };
-		}
-	}
-
-	// accessors to motors
-	public EV3LargeRegulatedMotor[] getMotors() {
-		return new EV3LargeRegulatedMotor[] { this.leftMotor, this.rightMotor };
-	}
-
-	public EV3LargeRegulatedMotor getLeftMotor() {
-		return this.leftMotor;
-	}
-
-	public EV3LargeRegulatedMotor getRightMotor() {
-		return this.rightMotor;
-	}
-
-	// static 'helper' methods
-	public static double fixDegAngle(double angle) {
+	/**
+	 * This method corrects angle issues with 0 = 360 degrees.
+	 * @param angle
+	 * @return angle
+	 */
+	public static double correctAngle(double angle) {
 		if (angle < 0.0)
 			angle = 360.0 + (angle % 360.0);
 
 		return angle % 360.0;
 	}
 
+	/**
+	 * This method finds the minimum angle to turn.
+	 * @param a
+	 * @param b
+	 * @return minimum angle
+	 */
 	public static double minimumAngleFromTo(double a, double b) {
-		double d = fixDegAngle(b - a);
+		double d = correctAngle(b - a);
 
 		if (d < 180.0)
 			return d;
