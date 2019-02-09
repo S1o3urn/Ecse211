@@ -1,7 +1,12 @@
 package ca.mcgill.ecse211.lab4;
 
+/**
+ * This class implements the navigation functionality of the robot.
+ * It provides methods to travel to waypoints, turn and set speeds for both wheels independently.
+ * @author Tian Han Jiang
+ */
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import static ca.mcgill.ecse211.lab4.Lab4.*;
+import static ca.mcgill.ecse211.lab4.Lab4.*;	// constants declared and initialized in Lab4
 
 public class Navigation {
 
@@ -89,12 +94,12 @@ public class Navigation {
 	 */
 	public void travelTo(double x, double y) {
 		double minAng;
-		while (Math.abs(x - odometer.getX()) > CM_ERR || Math.abs(y - odometer.getY()) > CM_ERR) {
+		while (Math.abs(x - odometer.getX()) > DISTANCE_ERROR || Math.abs(y - odometer.getY()) > DISTANCE_ERROR) {
 			minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
 			if (minAng < 0)
 				minAng += 360.0;
 			this.turnTo(minAng, false);
-			this.setSpeeds(FAST, FAST);
+			this.setSpeeds(FAST_SPEED, FAST_SPEED);
 		}
 		this.setSpeeds(0, 0);
 	}
@@ -110,18 +115,18 @@ public class Navigation {
 
 		double error = angle - this.odometer.getAng();
 
-		while (Math.abs(error) > DEG_ERR) {
+		while (Math.abs(error) > DEGREE_ERROR) {
 
 			error = angle - this.odometer.getAng();
 
 			if (error < -180.0) {
-				this.setSpeeds(-SLOW, SLOW);
+				this.setSpeeds(-SLOW_SPEED, SLOW_SPEED);
 			} else if (error < 0.0) {
-				this.setSpeeds(SLOW, -SLOW);
+				this.setSpeeds(SLOW_SPEED, -SLOW_SPEED);
 			} else if (error > 180.0) {
-				this.setSpeeds(SLOW, -SLOW);
+				this.setSpeeds(SLOW_SPEED, -SLOW_SPEED);
 			} else {
-				this.setSpeeds(-SLOW, SLOW);
+				this.setSpeeds(-SLOW_SPEED, SLOW_SPEED);
 			}
 		}
 

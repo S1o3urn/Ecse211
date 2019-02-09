@@ -1,5 +1,8 @@
 package ca.mcgill.ecse211.lab4;
 
+/**
+ * This class 
+ */
 import lejos.hardware.*;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
@@ -21,11 +24,11 @@ public class Lab4 {
 	public static final double TRACK = 16.2;
 
 	// Navigation constants
-	final static int FAST = 80;
-	final static int SLOW = 50;
+	final static int FAST_SPEED = 80;
+	final static int SLOW_SPEED = 50;
 	final static int ACCELERATION = 600;
-	final static double DEG_ERR = 0.6;
-	final static double CM_ERR = 0.4;
+	final static double DEGREE_ERROR = 0.6;
+	final static double DISTANCE_ERROR = 0.4;
 	
 	// Localizers
 	static UltrasonicLocalizer ultrasonicLocalizer;

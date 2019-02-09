@@ -1,10 +1,16 @@
 package ca.mcgill.ecse211.lab4;
 
+/**
+ * This class implements the odometer for the robot that tracks and corrects the robots position in its environment
+ * It provides methods to access and modify variables related to the robot's position.
+ * 
+ * @author Tian Han Jiang
+ */
 import lejos.utility.Timer;
 import lejos.utility.TimerListener;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
-import static ca.mcgill.ecse211.lab4.Lab4.*;
+import static ca.mcgill.ecse211.lab4.Lab4.*; // Constants declared and initialized in Lab4
 
 public class Odometer implements TimerListener {
 
@@ -19,13 +25,14 @@ public class Odometer implements TimerListener {
 	private double[] deltaDisplacementAndHeading;
 	private final int DEFAULT_TIMEOUT_PERIOD = 20;
 
-/**
- * This constructor.
- * @param leftMotor
- * @param rightMotor
- * @param INTERVAL
- * @param autostart
- */
+	/**
+	 * This constructor.
+	 * 
+	 * @param leftMotor
+	 * @param rightMotor
+	 * @param INTERVAL
+	 * @param autostart
+	 */
 	public Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, int INTERVAL,
 			boolean autostart) {
 
@@ -64,6 +71,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method calculates the robots displacement and orientation.
+	 * 
 	 * @param data
 	 */
 	private void getDisplacementAndHeading(double[] data) {
@@ -77,7 +85,8 @@ public class Odometer implements TimerListener {
 	}
 
 	/**
-	 * This method corrects the displacement and orientation based on odmeter's values.
+	 * This method corrects the displacement and orientation based on odmeter's
+	 * values.
 	 */
 	public void timedOut() {
 		this.getDisplacementAndHeading(deltaDisplacementAndHeading);
@@ -98,9 +107,10 @@ public class Odometer implements TimerListener {
 	}
 
 	// Accessors
-	
+
 	/**
 	 * This method gets the x value of the robot's current position.
+	 * 
 	 * @return X
 	 */
 	public double getX() {
@@ -111,6 +121,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method gets the y value of the robot's current position.
+	 * 
 	 * @return Y
 	 */
 	public double getY() {
@@ -121,6 +132,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method gets the theta value of the robot's current position.
+	 * 
 	 * @return theta
 	 */
 	public double getAng() {
@@ -131,6 +143,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method gets the robot's position.
+	 * 
 	 * @param position
 	 */
 	public void getPosition(double[] position) {
@@ -142,8 +155,8 @@ public class Odometer implements TimerListener {
 	}
 
 	/**
-	 * This method gets the robot's position.
-	 * Overloaded method.
+	 * This method gets the robot's position. Overloaded method.
+	 * 
 	 * @return a new array with x, y and theta
 	 */
 	public double[] getPosition() {
@@ -154,6 +167,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method returns an array of both motors.
+	 * 
 	 * @return a new array with both motors
 	 */
 	public EV3LargeRegulatedMotor[] getMotors() {
@@ -162,6 +176,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method returns the left motor.
+	 * 
 	 * @return leftMotor
 	 */
 	public EV3LargeRegulatedMotor getLeftMotor() {
@@ -170,6 +185,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method returns the right motor.
+	 * 
 	 * @return rightMotor
 	 */
 	public EV3LargeRegulatedMotor getRightMotor() {
@@ -177,9 +193,10 @@ public class Odometer implements TimerListener {
 	}
 
 	// Mutators
-	
+
 	/**
 	 * This method changes the robot's perceived position.
+	 * 
 	 * @param position
 	 * @param update
 	 */
@@ -196,6 +213,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method corrects angle issues with 0 = 360 degrees.
+	 * 
 	 * @param angle
 	 * @return angle
 	 */
@@ -208,6 +226,7 @@ public class Odometer implements TimerListener {
 
 	/**
 	 * This method finds the minimum angle to turn.
+	 * 
 	 * @param a
 	 * @param b
 	 * @return minimum angle
