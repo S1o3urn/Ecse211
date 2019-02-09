@@ -1,7 +1,10 @@
 package ca.mcgill.ecse211.lab4;
 
 /**
- * This class 
+ * This class declares and instanciates the motors and sensors.
+ * It also provides an interface to choose between localizer methods.
+ * 
+ * @author Tian Han Jiang
  */
 import lejos.hardware.*;
 import lejos.hardware.ev3.LocalEV3;
@@ -30,6 +33,9 @@ public class Lab4 {
 	final static double DEGREE_ERROR = 0.6;
 	final static double DISTANCE_ERROR = 0.4;
 	
+	// Display constants
+	final static int LCD_REFRESH_RATE = 100;
+	
 	// Localizers
 	static UltrasonicLocalizer ultrasonicLocalizer;
 	static LightLocalizer lightLocalizer;
@@ -37,12 +43,13 @@ public class Lab4 {
 	public static void main(String[] args) {
 
 		// Set up ultrasonic sensor
-		@SuppressWarnings("resource")
+		@SuppressWarnings("resource")	// Doesn't need to be closed
 		SensorModes ultrasonicSensor = new EV3UltrasonicSensor(ultrasonicPort);
 		SampleProvider ultrasonicValue = ultrasonicSensor.getMode("Distance");
 		float[] ultrasonicData = new float[ultrasonicValue.sampleSize()];
 
 		// Setup color sensor
+		@SuppressWarnings("resource")	// Doesn't need to be closed
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
 		SampleProvider colorValue = colorSensor.getMode("RGB");
 		float[] colorData = new float[colorValue.sampleSize()];
