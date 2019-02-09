@@ -106,7 +106,7 @@ public class Lab4 {
 		if (buttonPressed == Button.ID_LEFT || buttonPressed == Button.ID_RIGHT
 				|| buttonPressed == Button.ID_UP || buttonPressed == Button.ID_DOWN) {
 			lightLocalizer = new LightLocalizer(odometer, colorValue, colorData, navigation);
-			lightLocalizer.doLocalization();
+			lightLocalizer.localize();
 		}
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
