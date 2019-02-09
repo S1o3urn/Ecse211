@@ -36,6 +36,14 @@ public class Lab4 {
 	// Display constants
 	final static int LCD_REFRESH_RATE = 100;
 	
+	// Light localizer constants
+	public static int LIGHT_LOCALIZER_ROTATION_SPEED = 60;
+	public static int LIGHT_LOCALIZER_FORWARD_SPEED = 100;
+	public static int LIGHT_LOCALIZER_EDGE_DISTANCE = 18;
+	public static int LIGHT_LOCALIZER_ACCELERATION = 600;
+	public static int LIGHT_SENSOR_DISTANCE = 15;
+	public static double LINE_DETECTION_THRESHOLD = 20;
+	
 	// Localizers
 	static UltrasonicLocalizer ultrasonicLocalizer;
 	static LightLocalizer lightLocalizer;

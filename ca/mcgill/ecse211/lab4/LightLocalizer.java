@@ -4,42 +4,37 @@ import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
 
+import static ca.mcgill.ecse211.lab4.Lab4.*;
+
 public class LightLocalizer {
-	// constants
-	public static int ROTATION_SPEED = 60;
-	public static int FORWARD_SPEED = 100;
-	public static int DISTANCE_FROM_EDGE = 18;
-	public static int ACCELERATION = 600;
-	private static double significantPercentThreshold = 20; // the percent difference in our reading to consider it a
-															// different color (used for reading black)
-	private static int lightSensorDistance = 15;
+	private static final double LIGHT_LOCALIZER_EGDE_DISTANCE = 0;
+
 	// class variables
-	private Odometer odo;
+	private Odometer odometer;
 	private SampleProvider colorSensor;
 	private float[] colorData;
 	private double[] angles;
-	private double[] odoAngles;
 	private int angleIndex;
 	private double firstBrightness;
 	// motors
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	Navigation navi; // the navigation class
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
+	Navigation navigation;
 
-	public LightLocalizer(Odometer odo, SampleProvider colorSensor, float[] colorData, Navigation navi) {
+	public LightLocalizer(Odometer odometer, SampleProvider colorSensor, float[] colorData, Navigation navigation) {
 		// get incoming values for variables
-		this.odo = odo;
+		this.odometer = odometer;
 		this.colorSensor = colorSensor;
 		this.colorData = colorData;
-		this.navi = navi;
+		this.navigation = navigation;
 		// set up motors
-		EV3LargeRegulatedMotor[] motors = odo.getMotors();
+		EV3LargeRegulatedMotor[] motors = odometer.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
-		this.leftMotor.setAcceleration(ACCELERATION);
-		this.rightMotor.setAcceleration(ACCELERATION);
+		this.leftMotor.setAcceleration(LIGHT_LOCALIZER_ACCELERATION);
+		this.rightMotor.setAcceleration(LIGHT_LOCALIZER_ACCELERATION);
 		// initialize arrays
 		angles = new double[4];
-		odoAngles = new double[4];
 		angleIndex = 0;
 	}
 
@@ -53,14 +48,14 @@ public class LightLocalizer {
 
 		// we assume we are at theta 0 to start...
 		// set the speeds of the motors
-		leftMotor.setSpeed(FORWARD_SPEED);
-		rightMotor.setSpeed(FORWARD_SPEED);
+		leftMotor.setSpeed(LIGHT_LOCALIZER_FORWARD_SPEED);
+		rightMotor.setSpeed(LIGHT_LOCALIZER_FORWARD_SPEED);
 		leftMotor.forward();
 		rightMotor.forward();
 
 		// until we reach a black line go forward ((this will be the first
 		// y-vertical-line))
-		while (100 * Math.abs(getColorData() - firstBrightness) / firstBrightness < significantPercentThreshold) {
+		while (100 * Math.abs(getColorData() - firstBrightness) / firstBrightness < LINE_DETECTION_THRESHOLD) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -72,12 +67,12 @@ public class LightLocalizer {
 		leftMotor.stop(true);
 		rightMotor.stop(true);
 		// now go backwards a set amount
-		leftMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, DISTANCE_FROM_EDGE), true); // two tiles = 60.96
-		rightMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, DISTANCE_FROM_EDGE), false);
+		leftMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, LIGHT_LOCALIZER_EGDE_DISTANCE), true); // two tiles = 60.96
+		rightMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, LIGHT_LOCALIZER_EDGE_DISTANCE), false);
 
 		// now rotate to do the same thing in the Y.
-		leftMotor.setSpeed(ROTATION_SPEED);
-		rightMotor.setSpeed(ROTATION_SPEED);
+		leftMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
+		rightMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
 
 		// we must rotate 90 degrees
 		leftMotor.rotate(-convertAngle(Lab4.WHEEL_RADIUS, Lab4.TRACK, 90.0), true);
@@ -85,14 +80,14 @@ public class LightLocalizer {
 
 		// theta is now 90.
 		// set the speeds of the motors
-		leftMotor.setSpeed(FORWARD_SPEED);
-		rightMotor.setSpeed(FORWARD_SPEED);
+		leftMotor.setSpeed(LIGHT_LOCALIZER_FORWARD_SPEED);
+		rightMotor.setSpeed(LIGHT_LOCALIZER_FORWARD_SPEED);
 		leftMotor.forward();
 		rightMotor.forward();
 
 		// go forward until we hit a black line (this will be the first
 		// x-horizontal-line)
-		while (100 * Math.abs(getColorData() - firstBrightness) / firstBrightness < significantPercentThreshold) {
+		while (100 * Math.abs(getColorData() - firstBrightness) / firstBrightness < LINE_DETECTION_THRESHOLD) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -104,14 +99,14 @@ public class LightLocalizer {
 		leftMotor.stop(true);
 		rightMotor.stop(true);
 		// now go backwards a little bit.
-		leftMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, DISTANCE_FROM_EDGE), true); // two tiles = 60.96
-		rightMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, DISTANCE_FROM_EDGE), false);
+		leftMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, LIGHT_LOCALIZER_EDGE_DISTANCE), true); // two tiles = 60.96
+		rightMotor.rotate(-convertDistance(Lab4.WHEEL_RADIUS, LIGHT_LOCALIZER_EDGE_DISTANCE), false);
 
 		// start rotating and clock all 4 gridlines
 		// we just want to rotate 360 degrees. Each time we hit something, record it's
 		// angle...
-		leftMotor.setSpeed(ROTATION_SPEED);
-		rightMotor.setSpeed(ROTATION_SPEED);
+		leftMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
+		rightMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
 		leftMotor.backward();
 		rightMotor.forward();
 
@@ -123,12 +118,12 @@ public class LightLocalizer {
 			/*
 			 * Upon reaching a black line, beep and record it.
 			 */
-			if (100 * Math.abs(getColorData() - firstBrightness) / firstBrightness > significantPercentThreshold) { // getColorData()
+			if (100 * Math.abs(getColorData() - firstBrightness) / firstBrightness > LINE_DETECTION_THRESHOLD) { // getColorData()
 																													// -
 																													// firstBrightness
 																													// >
 																													// 10){
-				angles[angleIndex] = odo.getAng();
+				angles[angleIndex] = odometer.getAng();
 				angleIndex += 1;
 				Sound.beep();
 				try {
@@ -149,19 +144,19 @@ public class LightLocalizer {
 		double deltaY = angles[2] - angles[0];
 		double deltaX = angles[3] - angles[1];
 		// do trig to compute (0,0) and 0 degrees
-		double xValue = (-1) * lightSensorDistance * Math.cos(Math.PI * deltaX / (2 * 180));
-		double yValue = (-1) * lightSensorDistance * Math.cos(Math.PI * deltaY / (2 * 180));
+		double xValue = (-1) * LIGHT_SENSOR_DISTANCE * Math.cos(Math.PI * deltaX / (2 * 180));
+		double yValue = (-1) * LIGHT_SENSOR_DISTANCE * Math.cos(Math.PI * deltaY / (2 * 180));
 		double thetaYMinus = angles[0];
 		double deltaTheta = +180 - deltaY / 2 - thetaYMinus;
 
 		// turn to 0 now that we have adjusted correctly
-		navi.turnTo(0, true); // navi.turnTo(deltaTheta, true);
+		navigation.turnTo(0, true); // navi.turnTo(deltaTheta, true);
 
 		// set the position of the robot to where we are and an angle of 0.
-		odo.setPosition(new double[] { xValue, yValue, 0 }, new boolean[] { true, true, true });
+		odometer.setPosition(new double[] { xValue, yValue, 0 }, new boolean[] { true, true, true });
 		// now travel to 0,0 and turn to 0 (we are done!)
-		navi.travelTo(0, 0);
-		navi.turnTo(0, true);
+		navigation.travelTo(0, 0);
+		navigation.turnTo(0, true);
 
 	}
 
