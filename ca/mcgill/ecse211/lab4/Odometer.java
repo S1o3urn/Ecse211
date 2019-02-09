@@ -136,7 +136,7 @@ public class Odometer implements TimerListener {
 	 * 
 	 * @return theta
 	 */
-	public double getAng() {
+	public double getAngle() {
 		synchronized (this) {
 			return theta;
 		}
@@ -232,7 +232,7 @@ public class Odometer implements TimerListener {
 	 * @param b
 	 * @return minimum angle
 	 */
-	public static double minimumAngleFromTo(double a, double b) {
+	public static double minimumAngle(double a, double b) {
 		double d = correctAngle(b - a);
 
 		if (d < 180.0)

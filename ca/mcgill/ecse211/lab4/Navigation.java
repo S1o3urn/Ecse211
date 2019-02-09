@@ -113,11 +113,11 @@ public class Navigation {
 	 */
 	public void turnTo(double angle, boolean stop) {
 
-		double error = angle - this.odometer.getAng();
+		double error = angle - this.odometer.getAngle();
 
 		while (Math.abs(error) > DEGREE_ERROR) {
 
-			error = angle - this.odometer.getAng();
+			error = angle - this.odometer.getAngle();
 
 			if (error < -180.0) {
 				this.setSpeeds(-SLOW_SPEED, SLOW_SPEED);
@@ -140,8 +140,8 @@ public class Navigation {
 	 * @param distance
 	 */
 	public void driveForward(double distance) {
-		this.travelTo(Math.cos(Math.toRadians(this.odometer.getAng())) * distance,
-				Math.cos(Math.toRadians(this.odometer.getAng())) * distance);
+		this.travelTo(Math.cos(Math.toRadians(this.odometer.getAngle())) * distance,
+				Math.cos(Math.toRadians(this.odometer.getAngle())) * distance);
 
 	}
 }

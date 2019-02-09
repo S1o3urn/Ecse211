@@ -14,11 +14,20 @@ public class LightLocalizer {
 	private SampleProvider colorSensor;
 
 	// Buffers
-	private float[] colorData;
-	private double[] angles;
 	private int angleIndex;
-	private double ambientLight;
+	
+	private float[] colorData;
 	private float lightLevel; // Light values as a mean of RGB values
+	
+	private double[] angles;
+	private double ambientLight;
+	private double yValue;
+	private double xValue;
+	private double deltaY;
+	private double deltaX;
+	private double negativeThetaY;
+	private double deltaTheta;
+	
 
 	// Motors and navigation
 	private EV3LargeRegulatedMotor leftMotor;
@@ -64,10 +73,12 @@ public class LightLocalizer {
 		 * time is translated into incrementing Y value.
 		 */
 
-		// Robot at a line and has backed up slightly
+		// Robot at a line and has backed up slightly.
+		// If this is lineDetection's first method call, then first line in y-axis detected
+		// If this is lineDetection's second method call, then first line in x-axis detected
 		lineDetection();
 
-		// Rotate 90 degrees
+		// Rotate 90 degrees for x-axis detection
 		leftMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
 		rightMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
 		leftMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, 90.0), true);
@@ -75,24 +86,18 @@ public class LightLocalizer {
 
 		lineDetection();
 
-		// start rotating and clock all 4 gridlines
-		// we just want to rotate 360 degrees. Each time we hit something, record it's
-		// angle...
+		// Complete a full rotation and measure the angles whenever there's a black line detection
 		leftMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
 		rightMotor.setSpeed(LIGHT_LOCALIZER_ROTATION_SPEED);
 		leftMotor.backward();
 		rightMotor.forward();
-
-		// now we want to read the four angles for our spin (we store them in an array)
-		/*
-		 * While we still haven't read four black lines, spin around.
-		 */
+		
+		// Angles detection for all 4 directions
 		while (angleIndex < 4) {
-			/*
-			 * Upon reaching a black line, beep and record it.
-			 */
+
+			// Line detection
 			if (100 * Math.abs(getColorData() - ambientLight) / ambientLight > LINE_DETECTION_THRESHOLD) {
-				angles[angleIndex] = odometer.getAng();
+				angles[angleIndex] = odometer.getAngle();
 				angleIndex += 1;
 				Sound.beep();
 				try {
@@ -103,27 +108,26 @@ public class LightLocalizer {
 				}
 			}
 		}
-		// now stop the motors (we have out angle values)
 		leftMotor.stop(true);
 		rightMotor.stop(true);
 
 		// 0th element = first y line, 1st = first x point, 3rd = second y, 4th = second
 		// x
 		// calculate the deltas.
-		double deltaY = angles[2] - angles[0];
-		double deltaX = angles[3] - angles[1];
-		// do trig to compute (0,0) and 0 degrees
-		double xValue = (-1) * LIGHT_SENSOR_DISTANCE * Math.cos(Math.PI * deltaX / (2 * 180));
-		double yValue = (-1) * LIGHT_SENSOR_DISTANCE * Math.cos(Math.PI * deltaY / (2 * 180));
-		double thetaYMinus = angles[0];
-		double deltaTheta = +180 - deltaY / 2 - thetaYMinus;
+		deltaY = angles[2] - angles[0];
+		deltaX = angles[3] - angles[1];
+		// Trigonometry to compute (0,0) and 0 degrees
+		xValue = (-1) * LIGHT_SENSOR_DISTANCE * Math.cos(Math.PI * deltaX / (2 * 180));
+		yValue = (-1) * LIGHT_SENSOR_DISTANCE * Math.cos(Math.PI * deltaY / (2 * 180));
+		negativeThetaY = angles[0];
+		deltaTheta = 180 - deltaY / 2 - negativeThetaY;
 
-		// turn to 0 now that we have adjusted correctly
-		navigation.turnTo(0, true); // navi.turnTo(deltaTheta, true);
+		// turn to 0
+		navigation.turnTo(0, true);
 
 		// set the position of the robot to where we are and an angle of 0.
 		odometer.setPosition(new double[] { xValue, yValue, 0 }, new boolean[] { true, true, true });
-		// now travel to 0,0 and turn to 0 (we are done!)
+		// Travel to origin and turn to theta of 0
 		navigation.travelTo(0, 0);
 		navigation.turnTo(0, true);
 

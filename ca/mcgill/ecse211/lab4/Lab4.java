@@ -44,6 +44,12 @@ public class Lab4 {
 	public static int LIGHT_SENSOR_DISTANCE = 15;
 	public static double LINE_DETECTION_THRESHOLD = 20;
 	
+	// Ultrasonic localizer constants
+	public static int ULTRASONIC_WALL_DISTANCE = 30;
+	public static int ULTRASONIC_WALL_GAP = 3;
+	public static int ULTRASONIC_FILTER_OUT = 3;
+	public static int ULTRASONIC_ROTATION_SPEED = 60;
+	public static int ULTRASONIC_ACCELERATION = 600;
 	// Localizers
 	static UltrasonicLocalizer ultrasonicLocalizer;
 	static LightLocalizer lightLocalizer;
