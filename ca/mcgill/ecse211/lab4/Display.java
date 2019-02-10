@@ -1,70 +1,76 @@
 package ca.mcgill.ecse211.lab4;
 
-/**
- * This class implements the display functionality.
- * Given the odometer's data, the robot's position is displayed on it's LCD screen at a fixed interval.
- * @author Tian Han Jiang
- */
-import lejos.hardware.ev3.LocalEV3;
+import java.text.DecimalFormat;
+import ca.mcgill.ecse211.odometer.Odometer;
+import ca.mcgill.ecse211.odometer.OdometerExceptions;
 import lejos.hardware.lcd.TextLCD;
-import lejos.robotics.SampleProvider;
-import lejos.utility.Timer;
-import lejos.utility.TimerListener;
 
-import static ca.mcgill.ecse211.lab4.Lab4.*;
+/**
+ * Displays critical robot positioning and sensor acquired values.
+ * 
+ * @author tianh
+ */
+public class Display implements Runnable {
 
-public class Display implements TimerListener {
-	private Odometer odometer;
-	private Timer screenTimer;
-	private TextLCD screen = LocalEV3.get().getTextLCD();
-	private SampleProvider ultrasonicSensor;
-	private float[] ultrasonicData;		// For Display
-	private double[] position;			// For Display
+  private Odometer odo;
+  private TextLCD lcd;
+  private double[] position;
+  private final long DISPLAY_PERIOD = 25;
+  private long timeout = Long.MAX_VALUE;
 
-	/**
-	 * The constructor.
-	 * @param odometer
-	 * @param ultrasonicSensor
-	 * @param ultrasonicData
-	 */
-	public Display(Odometer odometer, SampleProvider ultrasonicSensor, float[] ultrasonicData) {
-		this.odometer = odometer;
-		this.screenTimer = new Timer(LCD_REFRESH_RATE, this);
+/**
+ * The constructor.
+ * @param lcd
+ * @throws OdometerExceptions
+ */
+  public Display(TextLCD lcd) throws OdometerExceptions {
+    odo = Odometer.getOdometer();
+    this.lcd = lcd;
+  }
 
-		// initialize data displaying arrays
-		position = new double[3];
-		this.ultrasonicSensor = ultrasonicSensor;
-		this.ultrasonicData = ultrasonicData;
-		// start the timer
-		screenTimer.start();
-	}
+  /**
+   * The overloaded class constructor.
+   * 
+   * @param odoData
+   * @throws OdometerExceptions 
+   */
+  public Display(TextLCD lcd, long timeout) throws OdometerExceptions {
+    odo = Odometer.getOdometer();
+    this.timeout = timeout;
+    this.lcd = lcd;
+  }
 
-	/**
-	 * This method displays the robot's last position when the timer has count down.
-	 */
-	public void timedOut() {
-		// Retrieve last position
-		odometer.getPosition(position);
-		
-		// Update information on screen
-		screen.clear();
-		screen.drawString("X:       ", 0, 0);
-		screen.drawString("Y:       ", 0, 1);
-		screen.drawString("Theta:   ", 0, 2);
-		screen.drawString("US dist.:", 0, 3);
-		screen.drawString(String.valueOf(position[0] * 10), 3, 0);
-		screen.drawString(String.valueOf(position[1] * 10), 3, 1);
-		screen.drawString(String.valueOf(position[2]), 3, 2);
-		screen.drawString(String.valueOf(getFilteredData()), 3, 3);
-	}
+  // Taken from previous labs
+  public void run() {
+    
+    lcd.clear();
+    
+    long updateStart, updateEnd;
 
-	/**
-	 * This method returns the ultrasonic sensor's measured value after transformation.
-	 * @return distance
-	 */
-	private float getFilteredData() {
-		ultrasonicSensor.fetchSample(ultrasonicData, 0);
-		float distance = (int) (ultrasonicData[0] * 100.0);
-		return distance;
-	}
+    long tStart = System.currentTimeMillis();
+    do {
+      updateStart = System.currentTimeMillis();
+
+      // Fetch position information from odometer
+      position = odo.getXYT();
+      
+      // Format and display robot position
+      DecimalFormat numberFormat = new DecimalFormat("######0.00");
+      lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);
+      lcd.drawString("Y: " + numberFormat.format(position[1]), 0, 1);
+      lcd.drawString("T: " + numberFormat.format(position[2]), 0, 2);
+      
+      // Ensure that the data is updated only once every period
+      updateEnd = System.currentTimeMillis();
+      if (updateEnd - updateStart < DISPLAY_PERIOD) {
+        try {
+          Thread.sleep(DISPLAY_PERIOD - (updateEnd - updateStart));
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    } while ((updateEnd - tStart) <= timeout);
+
+  }
+
 }
