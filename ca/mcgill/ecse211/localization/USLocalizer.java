@@ -1,5 +1,10 @@
 package ca.mcgill.ecse211.localization;
 
+/**
+ * This class implements the US localizer logic.
+ * 
+ * @author tianh
+ */
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
@@ -9,24 +14,31 @@ import ca.mcgill.ecse211.lab4.*;
 
 public class USLocalizer {
 
-	// vehicle constants
+	// Vehicle constants
 	public static int ROTATION_SPEED = 100;
 	private double deltaTheta;
 
 	private Odometer odometer;
 	private float[] usData;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
 	private boolean isRisingEdge;
 	private SampleProvider usDistance;
 
-	// Create a navigation
 	public Navigation navigation;
 
+	/**
+	 * Wall distance
+	 */
 	private double d = 35.00;
+	
+	/**
+	 * Gap distance
+	 */
 	private double k = 2;
 
 	/**
-	 * Constructor to initialize variables
+	 * The constructor.
 	 * 
 	 * @param Odometer
 	 * @param EV3LargeRegulatedMotor
@@ -49,8 +61,7 @@ public class USLocalizer {
 	}
 
 	/**
-	 * A method to determine which localization method to write
-	 * 
+	 * This method runs the appropriate localizer method.
 	 */
 	public void localize() {
 		if (isRisingEdge) {
@@ -61,45 +72,46 @@ public class USLocalizer {
 	}
 
 	/**
-	 * A method to localize position using the rising edge
-	 * 
+	 * This method implements the risingEdge localization technique.
 	 */
 	public void localizeRisingEdge() {
 
-		double angleA, angleB, turningAngle;
+		double angleA;
+		double angleB;
+		double turningAngle;
 
-		// Rotate to the wall
-		while (fetchUS() > d) {
+		// Rotate left to wall
+		while (fetchUSData() > d) {
 			leftMotor.backward();
 			rightMotor.forward();
 		}
-		// Rotate until it sees the open space
-		while (fetchUS() < d + k) {
+		// Rotate until open space detected
+		while (fetchUSData() < d + k) {
 			leftMotor.backward();
 			rightMotor.forward();
 		}
-		Sound.buzz();
-		// record angle
+		Sound.beep();
+		// Record angle
 		angleA = odometer.getXYT()[2];
 
-		// rotate the other way all the way until it sees the wall
-		while (fetchUS() > d) {
+		// Rotate until wall spotted
+		while (fetchUSData() > d) {
 			leftMotor.forward();
 			rightMotor.backward();
 		}
 
-		// rotate until it sees open space
-		while (fetchUS() < d + k) {
+		// Rotate until open space detected
+		while (fetchUSData() < d + k) {
 			leftMotor.forward();
 			rightMotor.backward();
 		}
-		Sound.buzz();
+		Sound.beep();
 		angleB = odometer.getXYT()[2];
 
 		leftMotor.stop(true);
 		rightMotor.stop();
 
-		// calculate angle of rotation
+		// Calculate rotation angle
 		if (angleA < angleB) {
 			deltaTheta = 45 - (angleA + angleB) / 2 + 180;
 		} else if (angleA > angleB) {
@@ -108,55 +120,58 @@ public class USLocalizer {
 
 		turningAngle = deltaTheta + odometer.getXYT()[2];
 
-		// rotate robot to the theta = 0.0 using turning angle and we account for small
-		// error
-		leftMotor.rotate(-convertAngle(Lab4.WHEEL_RAD, Lab4.TRACK, turningAngle+4.5), true);
-		rightMotor.rotate(convertAngle(Lab4.WHEEL_RAD, Lab4.TRACK, turningAngle+4.5), false);
+		// Rotate robot to 0 theta
+		// 4.5 fixes physical errors
+		leftMotor.rotate(-convertAngle(Lab4.WHEEL_RAD, Lab4.TRACK, turningAngle + 4.5), true);
+		rightMotor.rotate(convertAngle(Lab4.WHEEL_RAD, Lab4.TRACK, turningAngle + 4.5), false);
 
-		// set theta = 0.0
 		odometer.setXYT(0.0, 0.0, 0.0);
 	}
 
 	/**
-	 * A method to localize position using the falling edge
-	 * 
+	 * This method implements the risingEdge localization technique.
+	 * inverse wall detection logic from RisingEdge
 	 */
 	public void localizeFallingEdge() {
 
-		double angleA, angleB, turningAngle;
+		double angleA;
+		double angleB;
+		double turningAngle;
 
-		// Rotate to open space
-		while (fetchUS() < d + k) {
+		// Rotate until open space detected
+		while (fetchUSData() < d + k) {
 			leftMotor.backward();
 			rightMotor.forward();
 		}
-		// Rotate to the first wall
-		while (fetchUS() > d) {
+		// Rotate left to wall
+		while (fetchUSData() > d) {
 			leftMotor.backward();
 			rightMotor.forward();
 		}
-		Sound.buzz();
-		// record angle
+		Sound.beep();
+		
+		// Record angle
 		angleA = odometer.getXYT()[2];
 
-		// rotate out of the wall range
-		while (fetchUS() < d + k) {
+		// Rotate right until no walls detected
+		while (fetchUSData() < d + k) {
 			leftMotor.forward();
 			rightMotor.backward();
 		}
 
-		// rotate to the second wall
-		while (fetchUS() > d) {
+		// Rotate right until wall detected
+		while (fetchUSData() > d) {
 			leftMotor.forward();
 			rightMotor.backward();
 		}
-		Sound.buzz();
+		Sound.beep();
+		
 		angleB = odometer.getXYT()[2];
 
 		leftMotor.stop(true);
 		rightMotor.stop();
 
-		// calculate angle of rotation
+		// Calculate rotation angle
 		if (angleA < angleB) {
 			deltaTheta = 45 - (angleA + angleB) / 2;
 
@@ -166,45 +181,44 @@ public class USLocalizer {
 
 		turningAngle = deltaTheta + odometer.getXYT()[2];
 
-		// rotate robot to the theta = 0.0 and we account for small error
+		// Rotate robot to 0 theta
+		// 4.5 fixes physical errors
 		leftMotor.rotate(-convertAngle(Lab4.WHEEL_RAD, Lab4.TRACK, turningAngle - 1), true);
 		rightMotor.rotate(convertAngle(Lab4.WHEEL_RAD, Lab4.TRACK, turningAngle - 1), false);
 
-		// set odometer to theta = 0
 		odometer.setXYT(0.0, 0.0, 0.0);
 
 	}
 
 	/**
-	 * A method to get the distance from our sensor
-	 * 
-	 * @return
+	 * This method fetches the distance measured by the ultrasonic sensor.
+	 * @return transformed distance value
 	 */
-	private int fetchUS() {
+	private int fetchUSData() {
 		usDistance.fetchSample(usData, 0);
 		return (int) (usData[0] * 100);
 	}
 
 	/**
-	 * This method allows the conversion of a distance to the total rotation of each
-	 * wheel need to cover that distance.
+	 * This method takes in the total distance needed to travel and transforms it
+	 * into the number of wheel rotations needed
 	 * 
-	 * @param radius
 	 * @param distance
-	 * @return
+	 * @return distance in wheel rotations.
+	 * 
+	 * Taken from lab 3.
 	 */
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
 
 	/**
-	 * This method allows the conversion of a angle to the total rotation of each
-	 * wheel need to cover that distance.
+	 * This method converts radians into degrees.
 	 * 
-	 * @param radius
-	 * @param distance
 	 * @param angle
-	 * @return
+	 * @return wheel rotations needed
+	 * 
+	 * Taken from lab 3.
 	 */
 	private static int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);

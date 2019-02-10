@@ -31,7 +31,7 @@ public class Lab4 {
 
 	// Vehicle physical constants
 	public static final double WHEEL_RAD = 2.15;
-	public static final double TRACK = 13.5;	// 13.2
+	public static final double TRACK = 13.1;
 
 	public static void main(String[] args) throws OdometerExceptions {
 
