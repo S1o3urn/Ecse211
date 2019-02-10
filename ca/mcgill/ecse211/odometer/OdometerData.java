@@ -18,9 +18,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class OdometerData {
 
   // Position parameters
-  private volatile double x; // x-axis position
-  private volatile double y; // y-axis position
-  private volatile double theta; // Angle
+  private volatile double x;
+  private volatile double y;
+  private volatile double theta;
 
   // Class control variables
   /**
@@ -140,7 +140,6 @@ public class OdometerData {
   }
 
   // Mutators
-  
   /**
    * Overrides position values for odometry correction.
    * 

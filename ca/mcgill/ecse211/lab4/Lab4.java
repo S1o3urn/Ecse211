@@ -25,7 +25,7 @@ public class Lab4 {
 	// Motors and sensors
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
+	private static final TextLCD screen = LocalEV3.get().getTextLCD();
 	private static final Port usPort = LocalEV3.get().getPort("S2");
 	private static boolean isRisingEdge = true;
 
@@ -39,7 +39,7 @@ public class Lab4 {
 
 		// Odometer and display
 		Odometer odometer = Odometer.getOdometer(leftMotor, rightMotor, TRACK, WHEEL_RAD);
-		Display odometryDisplay = new Display(lcd);
+		Display odometryDisplay = new Display(screen);
 
 		@SuppressWarnings("resource")	// Never closed
 		SensorModes ultrasonicSensor = new EV3UltrasonicSensor(usPort);
@@ -47,14 +47,14 @@ public class Lab4 {
 
 		do {
 			// Reset screen
-			lcd.clear();
+			screen.clear();
 
 			// GUI
-			lcd.drawString("< Left | Right >", 0, 0);
-			lcd.drawString("       |        ", 0, 1);
-			lcd.drawString("Rising |Falling ", 0, 2);
-			lcd.drawString(" Edge  |  Edge  ", 0, 3);
-			lcd.drawString("       |        ", 0, 4);
+			screen.drawString("< Left | Right >", 0, 0);
+			screen.drawString("       |        ", 0, 1);
+			screen.drawString("Rising |Falling ", 0, 2);
+			screen.drawString(" Edge  |  Edge  ", 0, 3);
+			screen.drawString("       |        ", 0, 4);
 
 			buttonChoice = Button.waitForAnyPress();
 		} while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);

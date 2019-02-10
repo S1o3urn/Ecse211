@@ -1,5 +1,11 @@
 package ca.mcgill.ecse211.navigation;
 
+/**
+ * This class implements the navigation logic.
+ * It provides methods to travel to a waypoint, turn a specific angle and check whether the robot is navigating.
+ * 
+ * @author tianh
+ */
 import ca.mcgill.ecse211.lab4.Lab4;
 import ca.mcgill.ecse211.odometer.Odometer;
 import ca.mcgill.ecse211.odometer.OdometerExceptions;
@@ -32,18 +38,6 @@ public class Navigation extends Thread {
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 	}
-
-	// main run method for navigation
-	public void run() {
-		/*
-		travelTo(TILE_SIZE, TILE_SIZE);
-		travelTo(0.0, 2 * TILE_SIZE);
-		travelTo(2 * TILE_SIZE, 2 * TILE_SIZE);
-		travelTo(2*TILE_SIZE, TILE_SIZE);
-		travelTo(TILE_SIZE, 0.0);
-		*/
-	}
-
 
 	/**
 	 * Travel to a designated coordinate.

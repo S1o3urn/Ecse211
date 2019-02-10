@@ -4,12 +4,7 @@ import lejos.robotics.SampleProvider;
 
 /**
  * Taken from the wall follower lab.
- * Assumptions: us.fetchSample, and cont.processUSData methods operate in about 20mS
- * 				thread sleeps for 50 mS at the end of each loop
- * 
- * Thus, one cycle through the loop is approximately 70 mS.
- * This corresponds to a sampling rate of 1/70mS
- * or about 14 Hz.
+ * sampling rate of 1/70mS
  */
 public class UltrasonicPoller extends Thread {
 	
@@ -30,7 +25,7 @@ public class UltrasonicPoller extends Thread {
   }
 
 /**
- * Sensor returns float
+ * Sensor returns float.
  */
   public void run() {
     int distance;

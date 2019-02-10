@@ -3,6 +3,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 /**
  * This class implements the odometer functionality.
+ * 
  * @author tianh
  *
  */
@@ -17,10 +18,10 @@ public class Odometer extends OdometerData implements Runnable {
   private EV3LargeRegulatedMotor leftMotor;
   private EV3LargeRegulatedMotor rightMotor;
   
-  private double deltaL;
-  private double deltaR;
-  private int oldLeftMotorTachoCount;
-  private int oldRightMotorTachoCount;
+  private double leftDeltaDistance;
+  private double rightDeltaDistance;
+  private int lastLeftMotorTachoCount;
+  private int lastRightMotorTachoCount;
   
   private double Theta;
 
@@ -93,6 +94,7 @@ public class Odometer extends OdometerData implements Runnable {
    */
   // run method (required for Thread)
   public void run() {
+	  
     long updateStart;
     long updateEnd;
 
@@ -108,13 +110,13 @@ public class Odometer extends OdometerData implements Runnable {
       double dTheta;
       double dDisplacement;
 
-      deltaL = Math.PI * WHEEL_RAD * (leftMotorTachoCount - oldLeftMotorTachoCount) / 180;
-      deltaR = Math.PI * WHEEL_RAD * (rightMotorTachoCount - oldRightMotorTachoCount) / 180;
+      leftDeltaDistance = Math.PI * WHEEL_RAD * (leftMotorTachoCount - lastLeftMotorTachoCount) / 180;
+      rightDeltaDistance = Math.PI * WHEEL_RAD * (rightMotorTachoCount - lastRightMotorTachoCount) / 180;
       
-      oldLeftMotorTachoCount = leftMotorTachoCount;
-      oldRightMotorTachoCount = rightMotorTachoCount;
-      dDisplacement = 0.5 * (deltaL+deltaR);
-      dTheta = (deltaL-deltaR)/TRACK;
+      lastLeftMotorTachoCount = leftMotorTachoCount;
+      lastRightMotorTachoCount = rightMotorTachoCount;
+      dDisplacement = 0.5 * (leftDeltaDistance + rightDeltaDistance);
+      dTheta = (leftDeltaDistance - rightDeltaDistance)/TRACK;
       Theta += dTheta;
 
       dX = dDisplacement * Math.sin(Theta);
@@ -122,7 +124,7 @@ public class Odometer extends OdometerData implements Runnable {
 
       odo.update(dX, dY, dTheta * 180 / Math.PI);
 
-      // this ensures that the odometer only runs once every period
+      // Ensures that the odometer only runs once every period
       updateEnd = System.currentTimeMillis();
       if (updateEnd - updateStart < ODOMETER_PERIOD) {
         try {

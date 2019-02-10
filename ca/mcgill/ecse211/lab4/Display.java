@@ -12,8 +12,8 @@ import lejos.hardware.lcd.TextLCD;
  */
 public class Display implements Runnable {
 
-  private Odometer odo;
-  private TextLCD lcd;
+  private Odometer odometer;
+  private TextLCD screen;
   private double[] position;
   private final long DISPLAY_PERIOD = 25;
   private long timeout = Long.MAX_VALUE;
@@ -24,8 +24,8 @@ public class Display implements Runnable {
  * @throws OdometerExceptions
  */
   public Display(TextLCD lcd) throws OdometerExceptions {
-    odo = Odometer.getOdometer();
-    this.lcd = lcd;
+    odometer = Odometer.getOdometer();
+    this.screen = lcd;
   }
 
   /**
@@ -35,30 +35,32 @@ public class Display implements Runnable {
    * @throws OdometerExceptions 
    */
   public Display(TextLCD lcd, long timeout) throws OdometerExceptions {
-    odo = Odometer.getOdometer();
+    odometer = Odometer.getOdometer();
     this.timeout = timeout;
-    this.lcd = lcd;
+    this.screen = lcd;
   }
 
   // Taken from previous labs
   public void run() {
     
-    lcd.clear();
+    screen.clear();
     
-    long updateStart, updateEnd;
+    long updateStart;
+    long updateEnd;
 
     long tStart = System.currentTimeMillis();
+    
     do {
       updateStart = System.currentTimeMillis();
 
       // Fetch position information from odometer
-      position = odo.getXYT();
+      position = odometer.getXYT();
       
       // Format and display robot position
       DecimalFormat numberFormat = new DecimalFormat("######0.00");
-      lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);
-      lcd.drawString("Y: " + numberFormat.format(position[1]), 0, 1);
-      lcd.drawString("T: " + numberFormat.format(position[2]), 0, 2);
+      screen.drawString("X: " + numberFormat.format(position[0]), 0, 0);
+      screen.drawString("Y: " + numberFormat.format(position[1]), 0, 1);
+      screen.drawString("T: " + numberFormat.format(position[2]), 0, 2);
       
       // Ensure that the data is updated only once every period
       updateEnd = System.currentTimeMillis();

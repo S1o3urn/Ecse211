@@ -1,5 +1,10 @@
 package ca.mcgill.ecse211.localization;
 
+/**
+ * This class implements the light localizer logic.
+ * 
+ * @author tianh
+ */
 import lejos.hardware.Sound;
 
 import lejos.hardware.ev3.LocalEV3;
@@ -20,7 +25,8 @@ public class LightLocalizer {
 	private double LIGHT_SENSOR_LENGTH = 11.8;
 
 	private Odometer odometer;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
+	private EV3LargeRegulatedMotor leftMotor;
+	private EV3LargeRegulatedMotor rightMotor;
 	public Navigation navigation;
 	
 	// Instantiate color sensor
@@ -68,7 +74,7 @@ public class LightLocalizer {
 
 			if (sample < 0.38) {
 				lineMeasures[index] = odometer.getXYT()[2];
-				Sound.beepSequenceUp();
+				Sound.beep();
 				index++;
 			}
 		}
