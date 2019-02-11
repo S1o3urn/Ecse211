@@ -30,7 +30,7 @@ public class USLocalizer {
 	/**
 	 * Wall distance
 	 */
-	private double d = 35.00;
+	private double d = 30.00;
 	
 	/**
 	 * Gap distance

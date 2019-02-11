@@ -22,7 +22,7 @@ public class LightLocalizer {
 
 	// Vehicle constants
 	public static int ROTATION_SPEED = 100;
-	private double LIGHT_SENSOR_LENGTH = 11.8;
+	private double LIGHT_SENSOR_LENGTH = 13;
 
 	private Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor;
@@ -137,8 +137,8 @@ public class LightLocalizer {
 		Sound.beep();
 
 		// Move back to origin
-		leftMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -3), true);
-		rightMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -3), false);
+		leftMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -12), true);
+		rightMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -12), false);
 
 	}
 
