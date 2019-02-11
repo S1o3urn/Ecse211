@@ -130,15 +130,15 @@ public class LightLocalizer {
 			sample = fetchSample();
 			leftMotor.forward();
 			rightMotor.forward();
-
 		}
+		
 		leftMotor.stop(true);
 		rightMotor.stop();
 		Sound.beep();
 
 		// Move back to origin
-		leftMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -12), true);
-		rightMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -12), false);
+		leftMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -3), true);
+		rightMotor.rotate(convertDistance(Lab4.WHEEL_RAD, -3), false);
 
 	}
 

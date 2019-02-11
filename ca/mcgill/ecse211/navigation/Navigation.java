@@ -26,7 +26,7 @@ public class Navigation extends Thread {
 	private double currentTheta;
 
 	// Navigation constants
-	private static final int FORWARD_SPEED = 180;
+	private static final int FORWARD_SPEED = 190;
 	private static final int ROTATE_SPEED = 100;
 	private static final double TILE_SIZE = 30.48;
 
@@ -91,8 +91,8 @@ public class Navigation extends Thread {
 	 */
 	public void travelTo(double x, double y) {
 
-		x = odometer.getXYT()[0];
-		y = odometer.getXYT()[1];
+		currentX = odometer.getXYT()[0];
+		currentY = odometer.getXYT()[1];
 
 		deltaX = x - currentX;
 		deltaY = y - currentY;
