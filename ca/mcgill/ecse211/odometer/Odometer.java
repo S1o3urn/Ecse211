@@ -3,7 +3,8 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 /**
  * This class implements the odometer functionality.
- * 
+ *  Taken from previous labs
+ *  
  * @author tianh
  *
  */
@@ -115,6 +116,7 @@ public class Odometer extends OdometerData implements Runnable {
       
       lastLeftMotorTachoCount = leftMotorTachoCount;
       lastRightMotorTachoCount = rightMotorTachoCount;
+      
       dDisplacement = 0.5 * (leftDeltaDistance + rightDeltaDistance);
       dTheta = (leftDeltaDistance - rightDeltaDistance)/TRACK;
       Theta += dTheta;

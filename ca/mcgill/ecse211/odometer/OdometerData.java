@@ -3,12 +3,6 @@ package ca.mcgill.ecse211.odometer;
 /**
  * This class stores and provides thread safe access to the odometer data.
  * Taken from previous labs
- * 
- * @author Rodrigo Silva
- * @author Dirk Dubois
- * @author Derek Yu
- * @author Karim El-Baba
- * @author Michael Smith
  */
 
 import java.util.concurrent.locks.Condition;

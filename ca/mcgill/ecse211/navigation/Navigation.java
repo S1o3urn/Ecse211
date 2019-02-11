@@ -17,13 +17,13 @@ public class Navigation extends Thread {
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
 
-	private double deltax;
-	private double deltay;
+	private double deltaX;
+	private double deltaY;
 
 	// Current location of the vehicle
-	private double x;
-	private double y;
-	private double theta;
+	private double currentX;
+	private double currentY;
+	private double currentTheta;
 
 	// Navigation constants
 	private static final int FORWARD_SPEED = 180;
@@ -39,6 +39,49 @@ public class Navigation extends Thread {
 		this.rightMotor = rightMotor;
 	}
 
+	// main method of navigation
+	public void run() {
+
+		// From previous lab
+		
+		//option 1
+		//		travelTo(0.0, 2 * TILE_SIZE);
+		//		travelTo(TILE_SIZE, TILE_SIZE);
+		//		travelTo(2 * TILE_SIZE, 2 * TILE_SIZE);
+		//		travelTo(2*TILE_SIZE, TILE_SIZE);
+		//		travelTo(TILE_SIZE, 0.0);
+
+
+
+		//option 2 
+		travelTo(TILE_SIZE, TILE_SIZE);
+		travelTo(0.0, 2 * TILE_SIZE);
+		travelTo(2 * TILE_SIZE, 2 * TILE_SIZE);
+		travelTo(2*TILE_SIZE, TILE_SIZE);
+		travelTo(TILE_SIZE, 0.0);
+
+
+
+		//option 3 
+		//		travelTo(TILE_SIZE, 0.0);
+		//		travelTo(2*TILE_SIZE, TILE_SIZE);
+		//		travelTo(2 * TILE_SIZE, 2 * TILE_SIZE);
+		//		travelTo(0.0, 2 * TILE_SIZE);
+		//		travelTo(TILE_SIZE, TILE_SIZE);
+
+
+
+		//option 4 
+		//		travelTo(0.0,TILE_SIZE);
+		//		travelTo(TILE_SIZE,2*TILE_SIZE);
+		//		travelTo(TILE_SIZE, 0.0);
+		//		travelTo(2*TILE_SIZE, TILE_SIZE);
+		//		travelTo(2 * TILE_SIZE, 2 * TILE_SIZE);
+
+
+
+	}
+	
 	/**
 	 * Travel to a designated coordinate.
 	 * @param x
@@ -51,17 +94,17 @@ public class Navigation extends Thread {
 		x = odometer.getXYT()[0];
 		y = odometer.getXYT()[1];
 
-		deltax = x - x;
-		deltay = y - y;
+		deltaX = x - currentX;
+		deltaY = y - currentY;
 
 		// Calculate the angle to turn
-		theta = (odometer.getXYT()[2]) * Math.PI / 180;
-		double mTheta = Math.atan2(deltax, deltay) - theta;
+		currentTheta = (odometer.getXYT()[2]) * Math.PI / 180;
+		double calcTheta = Math.atan2(deltaX, deltaY) - currentTheta;
 
-		double hypotenuse = Math.hypot(deltax, deltay);
+		double hypotenuse = Math.hypot(deltaX, deltaY);
 
 		// Turn to the correct angle towards the endpoint
-		turnTo(mTheta);
+		turnTo(calcTheta);
 
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
